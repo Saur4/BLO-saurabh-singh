@@ -2404,6 +2404,7 @@
                     await batch.commit();
                 };
                 window._cloudBridge.googleSignIn = async () => {
+                   alert('बटन दबा!');
                     const res = await signInWithPopup(auth, new GoogleAuthProvider());
                     return res.user;
                 };
