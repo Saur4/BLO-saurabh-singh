@@ -1,0 +1,2467 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLO Saurabh Singh — मतदाता एवं ASDD सत्यापन डैशबोर्ड</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Sans Devanagari & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+        /* 10 Distinct Color-Coded Table Columns */
+        .col-sr-total { background-color: #f8fafc; color: #334155; font-weight: 600; }
+        .col-village  { background-color: #eff6ff; color: #1d4ed8; font-weight: 600; }
+        .col-sr-panch { background-color: #f5f3ff; color: #6d28d9; font-weight: 600; }
+        .col-house    { background-color: #fffbeb; color: #b45309; font-weight: 700; }
+        .col-voter    { background-color: #ecfdf5; color: #065f46; font-weight: 700; }
+        .col-rel      { background-color: #fdf2f8; color: #9d174d; font-weight: 500; }
+        .col-gender   { background-color: #ecfeff; color: #0e7490; font-weight: 600; }
+        .col-age      { background-color: #fff7ed; color: #c2410c; font-weight: 700; }
+        .col-status   { background-color: #eef2ff; color: #3730a3; font-weight: 600; }
+        .col-remark   { background-color: #f0fdf4; color: #166534; font-weight: 500; }
+
+        tbody tr:hover td {
+            filter: brightness(0.96);
+            transition: filter 0.15s ease;
+        }
+
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 8px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 8px;
+        }
+
+        @media print {
+            body { background-color: #ffffff !important; font-size: 10pt; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .table-container { overflow: visible !important; max-height: none !important; box-shadow: none !important; }
+            table { width: 100% !important; border-collapse: collapse !important; }
+            th, td {
+                border: 1px solid #cbd5e1 !important;
+                padding: 5px 6px !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Header / Navbar -->
+    <header class="bg-gradient-to-r from-indigo-950 via-blue-900 to-teal-800 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                        <span class="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium">
+                            🗳️ ग्राम पंचायत पिपौरी • विधानसभा क्षेत्र: 239-बिन्दकी • भाग संख्या: 51 एवं 52
+                        </span>
+                        <span id="mode-badge" class="inline-flex items-center gap-1.5 bg-amber-400/20 border border-amber-300/40 text-amber-200 px-3 py-1 rounded-full text-xs font-bold">
+                            👁️ पब्लिक व्यू (Read-Only)
+                        </span>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">
+                        BLO Saurabh Singh
+                    </h1>
+                    <p class="text-blue-100 text-xs sm:text-sm mt-1 font-medium">
+                        ग्राम पंचायत पिपौरी (कुल 5 गाँव) — मतदाता एवं ASDD सत्यापन पोर्टल | विधानसभा क्षेत्र: 239-बिन्दकी
+                    </p>
+                </div>
+
+                <!-- Action & Admin Controls -->
+                <div class="flex flex-wrap items-center gap-2.5 no-print">
+                    <button id="admin-analytics-btn" onclick="openAnalyticsModal()" class="hidden inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white border border-purple-400/40 font-bold px-4 py-2.5 rounded-xl shadow-md transition cursor-pointer text-sm">
+                        <span>📊</span>
+                        <span>विज़िटर रिपोर्ट</span>
+                        <span id="analytics-btn-badge" class="bg-white text-purple-900 text-xs font-extrabold px-2 py-0.5 rounded-full">0</span>
+                    </button>
+
+                    <button id="admin-upload-btn" onclick="openUploadModal()" class="hidden inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold px-4 py-2.5 rounded-xl shadow-md transition cursor-pointer text-sm">
+                        <span>📤</span>
+                        <span>डेटा अपलोड / जोड़ें</span>
+                    </button>
+
+                    <button onclick="exportToCSV()" class="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 active:scale-95 text-white border border-white/25 font-bold px-4 py-2.5 rounded-xl shadow-sm transition cursor-pointer text-sm">
+                        <span>📥</span>
+                        <span>Excel / CSV</span>
+                    </button>
+
+                    <button onclick="window.print()" class="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 active:scale-95 text-white border border-white/25 font-bold px-4 py-2.5 rounded-xl shadow-sm transition cursor-pointer text-sm">
+                        <span>🖨️</span>
+                        <span>प्रिंट</span>
+                    </button>
+
+                    <button id="admin-auth-btn" onclick="handleAdminButtonClick()" class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl shadow-md transition cursor-pointer text-sm">
+                        <span id="admin-btn-icon">🔐</span>
+                        <span id="admin-btn-text">Admin Login</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 space-y-5">
+
+        <!-- Two Clean Section Switcher Cards -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-4 no-print">
+            <!-- Card 1: Saurabh Singh — Bhag Sankhya 52 (Active Blue = #1d4ed8) -->
+            <button id="sec-btn-saurabh" type="button" onclick="switchOwnerSection('saurabh')" class="text-left p-4 sm:p-5 rounded-2xl border-2 border-[#1d4ed8] bg-[#1d4ed8] text-white shadow-lg transition-all cursor-pointer flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3.5">
+                    <div id="sec-icon-saurabh" class="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center text-2xl shrink-0">
+                        👨‍💼
+                    </div>
+                    <div>
+                        <div id="sec-tag-saurabh" class="text-xs font-bold uppercase tracking-wider text-blue-200">भाग संख्या — 52</div>
+                        <div id="sec-title-saurabh" class="text-lg sm:text-xl font-extrabold text-white">सौरभ सिंह — भाग संख्या 52</div>
+                        <div id="sec-sub-saurabh" class="text-xs text-blue-100 mt-0.5">ग्राम पंचायत पिपौरी (बुडैला, खजुरिहा, केवटरा) — पंचायत में दर्ज, विधानसभा से छूटे नाम</div>
+                    </div>
+                </div>
+                <div class="text-right shrink-0" title="पंचायत सूची में दर्ज, विधानसभा सूची में अनुपस्थित">
+                    <span id="count-badge-saurabh" class="inline-block bg-white text-[#1d4ed8] font-extrabold text-base sm:text-lg px-3.5 py-1 rounded-xl shadow">234</span>
+                    <div id="sec-lbl-saurabh" class="text-[11px] text-blue-100 mt-1 font-bold leading-tight">छूटे हुए नाम</div>
+                    <div id="sec-sublbl-saurabh" class="text-[10px] text-blue-200 font-medium leading-tight">(विधानसभा से)</div>
+                </div>
+            </button>
+
+            <!-- Card 2: Mohit Verma — Bhag Sankhya 51 (Active Emerald = #059669) -->
+            <button id="sec-btn-mohit" type="button" onclick="switchOwnerSection('mohit')" class="text-left p-4 sm:p-5 rounded-2xl border-2 border-slate-300 bg-white hover:border-[#059669] text-slate-800 shadow-sm transition-all cursor-pointer flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3.5">
+                    <div id="sec-icon-mohit" class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl shrink-0">
+                        👨‍💼
+                    </div>
+                    <div>
+                        <div id="sec-tag-mohit" class="text-xs font-bold uppercase tracking-wider text-emerald-700">भाग संख्या — 51</div>
+                        <div id="sec-title-mohit" class="text-lg sm:text-xl font-extrabold text-slate-900">मोहित वर्मा — भाग संख्या 51</div>
+                        <div id="sec-sub-mohit" class="text-xs text-slate-500 mt-0.5">ग्राम पंचायत पिपौरी (महुआखेड़ा, पिपौरी) — पंचायत में दर्ज, विधानसभा से छूटे नाम</div>
+                    </div>
+                </div>
+                <div class="text-right shrink-0" title="पंचायत सूची में दर्ज, विधानसभा सूची में अनुपस्थित">
+                    <span id="count-badge-mohit" class="inline-block bg-emerald-100 text-emerald-900 font-extrabold text-base sm:text-lg px-3.5 py-1 rounded-xl">211</span>
+                    <div id="sec-lbl-mohit" class="text-[11px] text-slate-700 mt-1 font-bold leading-tight">छूटे हुए नाम</div>
+                    <div id="sec-sublbl-mohit" class="text-[10px] text-slate-500 font-medium leading-tight">(विधानसभा से)</div>
+                </div>
+            </button>
+        </section>
+
+        <!-- Single Unified Mode Status Bar -->
+        <div id="admin-banner" class="bg-white border border-slate-200 px-4 py-2.5 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm no-print">
+            <div class="flex items-center gap-2">
+                <span id="sync-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                <span id="access-description" class="text-slate-700">
+                    <strong>पब्लिक व्यू:</strong> <strong>सौरभ सिंह (भाग-52)</strong> या <strong>मोहित वर्मा (भाग-51)</strong> पर क्लिक करके मतदाता एवं ASDD सूची देखें।
+                </span>
+            </div>
+            <div id="admin-uid-display" class="text-[11px] font-mono text-slate-400"></div>
+        </div>
+
+        <!-- NEW FEATURE 1: Live Verification Progress Bar -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 no-print">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">📈</span>
+                    <span id="progress-title-text" class="text-xs sm:text-sm font-extrabold text-slate-800">
+                        सत्यापन प्रगति (Verification Progress): 0% पूर्ण — 0 / 234 नाम सत्यापित
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 text-xs font-bold">
+                    <span id="progress-verified-pill" class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">✅ सत्यापित: 0</span>
+                    <span id="progress-pending-pill" class="bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full">⏳ शेष लंबित: 234</span>
+                </div>
+            </div>
+            <div class="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-0.5">
+                <div id="verification-progress-bar" class="h-full rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500 transition-all duration-500 ease-out" style="width: 0%;"></div>
+            </div>
+        </section>
+
+        <!-- Dynamic Village Summary Cards -->
+        <section id="village-kpi-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 no-print">
+            <!-- Populated dynamically based on active section's villages -->
+        </section>
+
+        <!-- Live Verification Status Pills Bar -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3.5 no-print">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    📊 ASDD सत्यापन स्थिति सारांश (किसी भी स्थिति पर क्लिक करके फ़िल्टर करें):
+                </span>
+                <button type="button" onclick="selectStatusQuick('ALL')" class="text-xs text-indigo-600 hover:underline font-semibold cursor-pointer">
+                    सभी स्थितियाँ दिखाएँ
+                </button>
+            </div>
+            <div id="status-summary-pills" class="flex flex-wrap gap-2">
+                <!-- Populated dynamically with counts for all 10 statuses -->
+            </div>
+        </section>
+
+        <!-- Control & Multi-Filter Panel -->
+        <section class="bg-white rounded-2xl shadow-md border border-slate-200 p-4 sm:p-5 space-y-4 no-print">
+            <!-- Village Filter Tabs -->
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    1️⃣ गाँव / अनुभाग चुनें (एक क्लिक में सीधा फ़िल्टर):
+                </label>
+                <div class="flex flex-wrap gap-2" id="village-tabs">
+                    <!-- Populated dynamically for active section -->
+                </div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <!-- Additional Filters Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+                <!-- Search Input -->
+                <div class="lg:col-span-3">
+                    <label for="search-input" class="block text-xs font-bold text-slate-600 mb-1">
+                        🔍 नाम, पिता/पति, मकान या क्र.सं.:
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="search-input" oninput="applyFilters()" placeholder="नाम या मकान नं. लिखें..." class="w-full pl-8 pr-7 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <button id="clear-search-btn" type="button" onclick="clearSearch()" class="hidden absolute right-2 top-2.5 text-slate-400 hover:text-slate-700 text-sm font-bold cursor-pointer">✕</button>
+                    </div>
+                </div>
+
+                <!-- Verification Status Filter -->
+                <div class="lg:col-span-3">
+                    <label for="status-filter" class="block text-xs font-bold text-slate-600 mb-1">
+                        📋 ASDD सत्यापन स्थिति:
+                    </label>
+                    <select id="status-filter" onchange="applyFilters()" class="w-full px-3 py-2.5 bg-indigo-50/70 border border-indigo-300 rounded-xl text-sm font-semibold text-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                        <option value="ALL">सभी स्थितियाँ (All ASDD Status)</option>
+                    </select>
+                </div>
+
+                <!-- House Number Dropdown -->
+                <div class="lg:col-span-2">
+                    <label for="house-filter" class="block text-xs font-bold text-slate-600 mb-1">
+                        🏠 मकान संख्या:
+                    </label>
+                    <select id="house-filter" onchange="applyFilters()" class="w-full px-3 py-2.5 bg-amber-50/60 border border-amber-300 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
+                        <option value="ALL">सभी मकान नं.</option>
+                    </select>
+                </div>
+
+                <!-- Gender Filter -->
+                <div class="lg:col-span-2">
+                    <label for="gender-filter" class="block text-xs font-bold text-slate-600 mb-1">
+                        ⚥ लिंग (Gender):
+                    </label>
+                    <select id="gender-filter" onchange="applyFilters()" class="w-full px-3 py-2.5 bg-cyan-50/60 border border-cyan-300 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer">
+                        <option value="ALL">सभी (पुरुष व महिला)</option>
+                        <option value="पुरुष">केवल पुरुष</option>
+                        <option value="महिला">केवल महिला</option>
+                    </select>
+                </div>
+
+                <!-- Age Group & Reset -->
+                <div class="lg:col-span-2 flex gap-2">
+                    <div class="flex-1">
+                        <label for="age-filter" class="block text-xs font-bold text-slate-600 mb-1">
+                            🎂 आयु:
+                        </label>
+                        <select id="age-filter" onchange="applyFilters()" class="w-full px-2.5 py-2.5 bg-orange-50/60 border border-orange-300 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer">
+                            <option value="ALL">सभी</option>
+                            <option value="18-19">18-19 वर्ष (नए फॉर्म-6)</option>
+                            <option value="20-25">20-25 वर्ष</option>
+                            <option value="26-45">26-45 वर्ष</option>
+                            <option value="46-60">46-60 वर्ष</option>
+                            <option value="60+">60+ वर्ष</option>
+                        </select>
+                    </div>
+                    <div class="self-end">
+                        <button type="button" onclick="resetAllFilters()" title="सभी फ़िल्टर रीसेट करें" class="bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-800 font-bold px-3 py-2.5 rounded-xl text-sm transition cursor-pointer">
+                            🔄
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Filter Status Bar + House-Wise Sort Toggle -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs sm:text-sm text-slate-600">
+                <div id="filter-summary-text" class="font-medium">
+                    दिखाए जा रहे हैं: <strong class="text-indigo-700">सौरभ सिंह — भाग संख्या 52 के कुल 234 मतदाता</strong>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <button type="button" id="house-sort-btn" onclick="toggleHouseSort()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition cursor-pointer shadow-2xs">
+                        <span>🏠</span>
+                        <span id="house-sort-label">मकान संख्या से क्रमबद्ध करें</span>
+                    </button>
+                    <div id="section-source-note" class="text-xs font-semibold text-slate-500">
+                        सक्रिय अनुभाग: सौरभ सिंह — भाग संख्या 52
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Print-Only Header Summary -->
+        <div class="hidden print-only mb-3 border-b pb-2">
+            <h2 class="text-lg font-bold">BLO Saurabh Singh — मतदाता एवं ASDD सूची (ग्राम पंचायत पिपौरी, 239-बिन्दकी)</h2>
+            <p id="print-filter-info" class="text-xs text-gray-700 mt-1"></p>
+        </div>
+
+        <!-- Colorful 10-Column Data Table Section -->
+        <section class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+            <div id="table-scroll-wrapper" class="table-container overflow-x-auto max-h-[68vh]">
+                <table class="w-full text-left border-collapse min-w-[1160px]">
+                    <thead class="sticky top-0 z-10 shadow-sm text-xs sm:text-sm">
+                        <tr>
+                            <th class="py-3.5 px-2.5 bg-slate-800 text-white font-bold text-center border-r border-slate-700 w-14">
+                                क्र.सं.<br><span class="text-[10px] font-normal text-slate-300">(कुल)</span>
+                            </th>
+                            <th class="py-3.5 px-3 bg-blue-700 text-white font-bold border-r border-blue-600 w-44">
+                                गाँव / अनुभाग<br><span class="text-[10px] font-normal text-blue-200">(वार्ड)</span>
+                            </th>
+                            <th class="py-3.5 px-2.5 bg-purple-700 text-white font-bold text-center border-r border-purple-600 w-24">
+                                क्र.सं.<br><span class="text-[10px] font-normal text-purple-200">(पंचायत सूची)</span>
+                            </th>
+                            <th class="py-3.5 px-2.5 bg-amber-600 text-white font-bold text-center border-r border-amber-500 w-20">
+                                मकान<br><span class="text-[10px] font-normal text-amber-100">संख्या</span>
+                            </th>
+                            <th class="py-3.5 px-3.5 bg-emerald-700 text-white font-bold border-r border-emerald-600">
+                                निर्वाचक का नाम<br><span class="text-[10px] font-normal text-emerald-200">(मतदाता)</span>
+                            </th>
+                            <th class="py-3.5 px-3.5 bg-pink-700 text-white font-bold border-r border-pink-600">
+                                पिता / पति का नाम<br><span class="text-[10px] font-normal text-pink-200">(अभिभावक)</span>
+                            </th>
+                            <th class="py-3.5 px-2.5 bg-cyan-700 text-white font-bold text-center border-r border-cyan-600 w-20">
+                                लिंग
+                            </th>
+                            <th class="py-3.5 px-2.5 bg-orange-600 text-white font-bold text-center border-r border-orange-500 w-16">
+                                आयु
+                            </th>
+                            <th class="py-3.5 px-3 bg-indigo-700 text-white font-bold text-center border-r border-indigo-600 w-60">
+                                सत्यापन स्थिति<br><span class="text-[10px] font-normal text-indigo-200">(ASDD)</span>
+                            </th>
+                            <th class="py-3.5 px-3 bg-teal-700 text-white font-bold text-center w-56">
+                                टिप्पणी / मोबाइल नं.<br><span class="text-[10px] font-normal text-teal-200">(Remark / Form-6)</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="voter-table-body" class="divide-y divide-slate-200 text-sm">
+                        <!-- Rows populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State Message -->
+            <div id="empty-state" class="hidden py-14 px-4 text-center">
+                <div id="empty-state-icon" class="text-4xl mb-3">📋</div>
+                <h3 id="empty-state-title" class="text-lg font-bold text-slate-800">कोई मतदाता रिकॉर्ड नहीं मिला</h3>
+                <p id="empty-state-desc" class="text-sm text-slate-500 mt-1 max-w-md mx-auto">
+                    कृपया खोज शब्द बदलें या सभी फ़िल्टर रीसेट करें।
+                </p>
+                <div id="empty-state-actions" class="mt-4 flex flex-wrap justify-center gap-2.5">
+                    <button type="button" onclick="resetAllFilters()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-xl text-sm shadow transition cursor-pointer">
+                        सभी फ़िल्टर रीसेट करें
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Dual-Admin Login Modal (Saurabh Singh & Mohit Verma) -->
+    <div id="admin-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                    <span>🔐</span> Admin Login — BLO Saurabh Singh
+                </h3>
+                <button type="button" onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold cursor-pointer">✕</button>
+            </div>
+            
+            <p class="text-sm text-slate-600 leading-relaxed">
+                केवल <strong>सौरभ सिंह (भाग संख्या 52)</strong> और <strong>मोहित वर्मा (भाग संख्या 51)</strong> ही स्थायी एडमिन हैं। लॉगिन के बाद दोनों एडमिन मिलकर दोनों भागों का डेटा देख और अपडेट कर सकते हैं।
+            </p>
+
+            <!-- Step 1: Select Admin Profile -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                    अपना एडमिन प्रोफ़ाइल चुनें:
+                </label>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button type="button" id="pick-admin-saurabh" onclick="selectAdminSlotToLogin('saurabh')" class="p-3 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-950 font-bold text-sm text-left transition cursor-pointer">
+                        <div class="flex items-center justify-between">
+                            <span>👨‍💼 सौरभ सिंह</span>
+                            <span id="slot-status-saurabh" class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-200 text-indigo-900">उपलब्ध</span>
+                        </div>
+                        <div class="text-[11px] font-semibold text-indigo-700 mt-1">भाग संख्या 52</div>
+                    </button>
+
+                    <button type="button" id="pick-admin-mohit" onclick="selectAdminSlotToLogin('mohit')" class="p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-emerald-500 text-slate-800 font-bold text-sm text-left transition cursor-pointer">
+                        <div class="flex items-center justify-between">
+                            <span>👨‍💼 मोहित वर्मा</span>
+                            <span id="slot-status-mohit" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900">उपलब्ध</span>
+                        </div>
+                        <div class="text-[11px] font-semibold text-emerald-700 mt-1">भाग संख्या 51</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Login Method -->
+            <div class="space-y-2.5 pt-1">
+                <button type="button" onclick="loginWithGoogleForSelectedAdmin()" class="w-full flex items-center justify-center gap-2.5 bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-300 font-bold py-2.5 px-4 rounded-xl shadow-sm transition cursor-pointer text-sm">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96z"/></svg>
+                    <span>Google खाते से Admin Login करें</span>
+                </button>
+
+                <button type="button" onclick="claimSelectedAdminWithCurrentSession()" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition cursor-pointer text-sm">
+                    <span>🛡️</span>
+                    <span>इसी डिवाइस से Admin सक्रिय करें</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Bulk CSV Upload & Single Voter Entry Modal -->
+    <div id="upload-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                    <span>📤</span> मतदाता डेटा अपलोड / जोड़ें
+                </h3>
+                <button type="button" onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold cursor-pointer">✕</button>
+            </div>
+
+            <!-- Target Section Selector -->
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">
+                    किस भाग संख्या की सूची में डेटा जोड़ना है?
+                </label>
+                <select id="upload-target-owner" class="w-full px-3 py-2.5 bg-indigo-50 border border-indigo-300 rounded-xl text-sm font-bold text-indigo-950">
+                    <option value="mohit">👨‍💼 मोहित वर्मा — भाग संख्या 51</option>
+                    <option value="saurabh">👨‍💼 सौरभ सिंह — भाग संख्या 52</option>
+                </select>
+            </div>
+
+            <!-- Bulk CSV Upload Box -->
+            <div class="bg-slate-50 border-2 border-dashed border-indigo-300 rounded-2xl p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-extrabold text-indigo-900">1️⃣ बल्क CSV फाइल अपलोड</span>
+                    <button type="button" onclick="downloadSampleCSV()" class="text-xs bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-300 font-bold px-2.5 py-1 rounded-lg cursor-pointer">
+                        📥 CSV हेडर फॉर्मेट
+                    </button>
+                </div>
+                <p class="text-xs text-slate-600">
+                    कॉलम क्रम: <code class="bg-white px-1.5 py-0.5 rounded border text-[11px]">गाँव,पंचायत_क्र_सं,मकान_संख्या,निर्वाचक_का_नाम,पिता_पति_का_नाम,लिंग,आयु</code>
+                </p>
+                <input type="file" id="csv-file-input" accept=".csv" class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
+                <button type="button" onclick="processCSVUpload()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl shadow text-sm transition cursor-pointer">
+                    🚀 CSV फाइल अपलोड व पब्लिक करें
+                </button>
+            </div>
+
+            <div class="relative flex py-1 items-center">
+                <div class="flex-grow border-t border-slate-200"></div>
+                <span class="flex-shrink mx-3 text-xs font-bold text-slate-400">अथवा एक नाम जोड़ें</span>
+                <div class="flex-grow border-t border-slate-200"></div>
+            </div>
+
+            <!-- Single Voter Entry Form -->
+            <form onsubmit="addSingleVoter(event)" class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">गाँव / अनुभाग (वार्ड) *</label>
+                        <input type="text" id="single-village" required placeholder="गाँव व वार्ड लिखें" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">पंचायत क्र.सं. *</label>
+                        <input type="number" id="single-psr" required placeholder="क्र.सं." class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">मकान संख्या *</label>
+                        <input type="text" id="single-house" required placeholder="मकान नं." class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">निर्वाचक का नाम *</label>
+                        <input type="text" id="single-name" required placeholder="मतदाता का नाम" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">पिता / पति का नाम *</label>
+                        <input type="text" id="single-rel" required placeholder="अभिभावक का नाम" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">लिंग *</label>
+                            <select id="single-gender" class="w-full px-2.5 py-2 border border-slate-300 rounded-xl text-sm">
+                                <option value="पुरुष">पुरुष</option>
+                                <option value="महिला">महिला</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">आयु *</label>
+                            <input type="number" id="single-age" required min="18" max="120" value="18" class="w-full px-2.5 py-2 border border-slate-300 rounded-xl text-sm">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl shadow text-sm transition cursor-pointer">
+                    ➕ मतदाता रिकॉर्ड जोड़ें
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin-Only Visitor & Activity Analytics Modal -->
+    <div id="analytics-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-5xl w-full p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[92vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3 shrink-0">
+                <div>
+                    <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>📊</span> विज़िटर एवं गतिविधि रिपोर्ट (Admin Analytics)
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        ऑटोमैटिक ट्रैकिंग: कुल क्लिक्स, यूनिक डिवाइस, दिनांक/समय, डिवाइस/ब्राउज़र, बैटरी प्रतिशत एवं गाँव-वार गतिविधि
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="refreshAnalyticsView()" class="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold px-3 py-1.5 rounded-xl text-xs transition cursor-pointer">
+                        <span>🔄</span> रिफ्रेश
+                    </button>
+                    <button type="button" onclick="clearVisitorLogs()" class="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-3 py-1.5 rounded-xl text-xs transition cursor-pointer">
+                        <span>🗑️</span> लॉग साफ़ करें
+                    </button>
+                    <button type="button" onclick="closeAnalyticsModal()" class="ml-1 text-slate-400 hover:text-slate-700 text-xl font-bold px-2 cursor-pointer">✕</button>
+                </div>
+            </div>
+
+            <!-- KPI Summary Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
+                <div class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl p-3.5">
+                    <div class="text-xs font-bold text-indigo-700">कुल विज़िट / क्लिक्स</div>
+                    <div id="kpi-total-visits" class="text-2xl sm:text-3xl font-extrabold text-indigo-950 mt-1">0</div>
+                    <div class="text-[11px] text-indigo-600 mt-0.5">लिंक ओपन व एक्टिविटी</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-3.5">
+                    <div class="text-xs font-bold text-emerald-700">यूनिक डिवाइस (Visitors)</div>
+                    <div id="kpi-unique-devices" class="text-2xl sm:text-3xl font-extrabold text-emerald-950 mt-1">0</div>
+                    <div class="text-[11px] text-emerald-600 mt-0.5">अलग-अलग मोबाइल / PC</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-3.5">
+                    <div class="text-xs font-bold text-amber-800">मोबाइल बनाम कंप्यूटर</div>
+                    <div id="kpi-device-split" class="text-lg sm:text-xl font-extrabold text-amber-950 mt-1.5">0 📱 / 0 💻</div>
+                    <div class="text-[11px] text-amber-700 mt-0.5">डिवाइस प्रकार विभाजन</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-3.5">
+                    <div class="text-xs font-bold text-purple-800">सर्वाधिक देखा गया अनुभाग</div>
+                    <div id="kpi-top-section" class="text-sm sm:text-base font-extrabold text-purple-950 mt-1.5 truncate">—</div>
+                    <div id="kpi-top-section-sub" class="text-[11px] text-purple-700 mt-0.5">अनुभाग तुलना</div>
+                </div>
+            </div>
+
+            <!-- Device & Browser Breakdown Pills -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shrink-0">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                    📱 डिवाइस व ब्राउज़र ब्रेकडाउन:
+                </div>
+                <div id="analytics-breakdown-pills" class="flex flex-wrap gap-2">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Recent Visitor & Activity Table -->
+            <div class="overflow-auto border border-slate-200 rounded-xl flex-1">
+                <table class="w-full text-left border-collapse min-w-[900px] text-xs sm:text-sm">
+                    <thead class="bg-slate-800 text-white sticky top-0 z-10 text-xs">
+                        <tr>
+                            <th class="py-2.5 px-3 text-center w-12">क्र.सं.</th>
+                            <th class="py-2.5 px-3 w-44">दिनांक व समय (Date & Time)</th>
+                            <th class="py-2.5 px-3 w-32">डिवाइस ID (Unique)</th>
+                            <th class="py-2.5 px-3 w-44">डिवाइस व ब्राउज़र</th>
+                            <th class="py-2.5 px-3 w-36 text-center">बैटरी (Battery)</th>
+                            <th class="py-2.5 px-3 w-44">देखा गया अनुभाग</th>
+                            <th class="py-2.5 px-3">गाँव / गतिविधि (Activity)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analytics-table-body" class="divide-y divide-slate-200">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-8 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+            <span><strong>BLO Saurabh Singh</strong> • ग्राम पंचायत पिपौरी • विधानसभा क्षेत्र: 239-बिन्दकी</span>
+            <span>भाग संख्या 52: सौरभ सिंह • भाग संख्या 51: मोहित वर्मा</span>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Box -->
+    <div id="toast-box" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium flex items-center gap-2 no-print">
+        <span id="toast-icon">✅</span>
+        <span id="toast-msg">संदेश</span>
+    </div>
+
+    <!-- Self-Contained Synchronous Core Script (Zero-Blocking Immediate Render) -->
+    <script>
+        // 1. Exact 10 ASDD Verification Status Definitions
+        const STATUS_OPTIONS = [
+            { value: 'pending',      label: '⏳ लंबित (Pending)',                badgeClass: 'bg-slate-200 text-slate-800 border-slate-300',       pillClass: 'bg-slate-100 text-slate-800 border-slate-300' },
+            { value: 'present',      label: '✅ उपस्थित / सही (Present)',         badgeClass: 'bg-emerald-100 text-emerald-900 border-emerald-300', pillClass: 'bg-emerald-50 text-emerald-800 border-emerald-300' },
+            { value: 'absent',       label: '🚫 अनुपस्थित (Absent)',            badgeClass: 'bg-amber-100 text-amber-900 border-amber-300',       pillClass: 'bg-amber-50 text-amber-800 border-amber-300' },
+            { value: 'shifted',      label: '📦 स्थानांतरित (Shifted)',          badgeClass: 'bg-blue-100 text-blue-900 border-blue-300',          pillClass: 'bg-blue-50 text-blue-800 border-blue-300' },
+            { value: 'dead',         label: '🕊️ मृतक (Dead)',                   badgeClass: 'bg-rose-100 text-rose-900 border-rose-300',          pillClass: 'bg-rose-50 text-rose-800 border-rose-300' },
+            { value: 'duplicate',    label: '🔁 दोहरा नाम (Duplicate)',         badgeClass: 'bg-purple-100 text-purple-900 border-purple-300',    pillClass: 'bg-purple-50 text-purple-800 border-purple-300' },
+            { value: 'form6',        label: '📝 फॉर्म-6 भरा गया (Form-6)',      badgeClass: 'bg-teal-100 text-teal-900 border-teal-300',          pillClass: 'bg-teal-50 text-teal-800 border-teal-300' },
+            { value: 'docs_pending', label: '📄 दस्तावेज़ अपूर्ण (Docs Pending)', badgeClass: 'bg-orange-100 text-orange-900 border-orange-300',    pillClass: 'bg-orange-50 text-orange-800 border-orange-300' },
+            { value: 'ineligible',   label: '⛔ अपात्र / कम आयु (Ineligible)',   badgeClass: 'bg-red-100 text-red-900 border-red-300',             pillClass: 'bg-red-50 text-red-800 border-red-300' },
+            { value: 'reverify',     label: '🔍 पुनः जाँच आवश्यक (Re-verify)',   badgeClass: 'bg-yellow-100 text-yellow-900 border-yellow-400',    pillClass: 'bg-yellow-50 text-yellow-900 border-yellow-400' }
+        ];
+
+        const STATUS_MAP = Object.fromEntries(STATUS_OPTIONS.map(s => [s.value, s]));
+
+        // 2. Complete Pre-Loaded 234 Records for Saurabh Singh — Bhag Sankhya 52
+        const SAURABH_BASE_DATA = [
+            // 1-बुडैला (वार्ड-1) [16 नाम]
+            { id: "sp_5", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 5, house: "1", name: "ममता देवी", rel: "अतुल कुमार", gender: "महिला", age: 35 },
+            { id: "sp_9", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 9, house: "1", name: "अनुराग उमराव", rel: "जय नारायण उमराव", gender: "पुरुष", age: 18 },
+            { id: "sp_18", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 18, house: "2", name: "अंश उमराव", rel: "सत्य नारायन", gender: "पुरुष", age: 19 },
+            { id: "sp_19", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 19, house: "2", name: "अंशिका उमराव", rel: "सत्य नारायण", gender: "महिला", age: 18 },
+            { id: "sp_23", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 23, house: "3", name: "जयपाल", rel: "सहादेव", gender: "पुरुष", age: 52 },
+            { id: "sp_24", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 24, house: "3", name: "ललतादेवी", rel: "जयपाल", gender: "महिला", age: 40 },
+            { id: "sp_35", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 35, house: "4", name: "अंजू पटेल", rel: "पवन कुमार", gender: "महिला", age: 25 },
+            { id: "sp_38", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 38, house: "5", name: "संजीव कुमार", rel: "जयराम", gender: "पुरुष", age: 51 },
+            { id: "sp_39", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 39, house: "5", name: "मीना देवी", rel: "संजीव कुमार", gender: "महिला", age: 50 },
+            { id: "sp_42", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 42, house: "5", name: "सूर्यांश सिंह", rel: "संजीव कुमार", gender: "पुरुष", age: 21 },
+            { id: "sp_43", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 43, house: "5", name: "शैली पटेल", rel: "संजीव कुमार", gender: "महिला", age: 21 },
+            { id: "sp_45", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 45, house: "6", name: "अखिलेश कुमार", rel: "गयाप्रसाद", gender: "पुरुष", age: 40 },
+            { id: "sp_51", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 51, house: "7", name: "रूमन देवी", rel: "नरेश कुमार", gender: "महिला", age: 39 },
+            { id: "sp_52", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 52, house: "7", name: "साहिल उमराव", rel: "अमरीश उमराव", gender: "पुरुष", age: 20 },
+            { id: "sp_80", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 80, house: "10ख", name: "नीरादेवी", rel: "फूलचन्द्र", gender: "महिला", age: 51 },
+            { id: "sp_87", owner: "saurabh", village: "1-बुडैला (वार्ड-1)", pSr: 87, house: "10ख", name: "मोनिका", rel: "गगन उमराव", gender: "महिला", age: 26 },
+
+            // 2-खजुरिहा (वार्ड-5) [40 नाम]
+            { id: "sp_645", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 645, house: "86", name: "जयराम", rel: "गयाप्रसाद", gender: "पुरुष", age: 71 },
+            { id: "sp_650", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 650, house: "87", name: "वर्षा पटेल", rel: "राज कुमार", gender: "महिला", age: 24 },
+            { id: "sp_651", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 651, house: "87", name: "आलोक पटेल", rel: "राज कुमार", gender: "पुरुष", age: 20 },
+            { id: "sp_656", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 656, house: "89", name: "वीनादेवी", rel: "शिवनाथ", gender: "महिला", age: 47 },
+            { id: "sp_657", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 657, house: "89", name: "मंजू देवी", rel: "ओमनाथ", gender: "महिला", age: 44 },
+            { id: "sp_658", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 658, house: "89", name: "सीमा देवी", rel: "शिवकुमार", gender: "महिला", age: 37 },
+            { id: "sp_659", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 659, house: "89", name: "शिवकुमार", rel: "अमृतलाल", gender: "पुरुष", age: 41 },
+            { id: "sp_662", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 662, house: "89", name: "दीक्षा देवी", rel: "अमरनाथ", gender: "महिला", age: 29 },
+            { id: "sp_663", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 663, house: "89", name: "दीपक", rel: "अमरनाथ", gender: "पुरुष", age: 25 },
+            { id: "sp_664", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 664, house: "89", name: "गौतमी", rel: "शिवनाथ", gender: "महिला", age: 22 },
+            { id: "sp_671", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 671, house: "91", name: "नीशू", rel: "राकेश कुमार", gender: "पुरुष", age: 30 },
+            { id: "sp_672", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 672, house: "91", name: "सोनम", rel: "श्रीनाथ", gender: "महिला", age: 30 },
+            { id: "sp_673", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 673, house: "91", name: "दिव्यांशु", rel: "राकेश कुमार", gender: "पुरुष", age: 25 },
+            { id: "sp_674", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 674, house: "91", name: "पारुल", rel: "सुशील", gender: "महिला", age: 25 },
+            { id: "sp_675", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 675, house: "92", name: "ओम नाथ", rel: "अमृत लाल", gender: "पुरुष", age: 57 },
+            { id: "sp_679", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 679, house: "93", name: "राम गोपाल", rel: "रामपाल", gender: "पुरुष", age: 29 },
+            { id: "sp_682", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 682, house: "94", name: "सुशीला देवी", rel: "रंगपाल", gender: "महिला", age: 39 },
+            { id: "sp_683", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 683, house: "94", name: "नरेश", rel: "दरशन", gender: "पुरुष", age: 36 },
+            { id: "sp_684", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 684, house: "94", name: "विजय लक्ष्मी", rel: "नरेश", gender: "महिला", age: 35 },
+            { id: "sp_686", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 686, house: "94", name: "शुशीला देवी", rel: "सुरेन्द्र", gender: "महिला", age: 27 },
+            { id: "sp_691", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 691, house: "95", name: "रितिक रोशन", rel: "रमेश प्रसाद", gender: "पुरुष", age: 24 },
+            { id: "sp_704", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 704, house: "99", name: "अभिषेक सिंह", rel: "फूल सिंह", gender: "पुरुष", age: 18 },
+            { id: "sp_705", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 705, house: "100", name: "दयाराम", rel: "छेददू", gender: "पुरुष", age: 74 },
+            { id: "sp_719", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 719, house: "101", name: "सरोज", rel: "श्रीराम", gender: "महिला", age: 22 },
+            { id: "sp_730", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 730, house: "102", name: "रामप्रकाश", rel: "रामराज", gender: "पुरुष", age: 24 },
+            { id: "sp_733", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 733, house: "102", name: "राहुल", rel: "रामराज", gender: "पुरुष", age: 21 },
+            { id: "sp_735", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 735, house: "102", name: "ममता", rel: "राम लखन", gender: "महिला", age: 20 },
+            { id: "sp_739", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 739, house: "103", name: "राधा देवी", rel: "राम संजीवन", gender: "महिला", age: 65 },
+            { id: "sp_744", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 744, house: "104", name: "श्याम जी", rel: "लाल सिंह", gender: "पुरुष", age: 31 },
+            { id: "sp_751", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 751, house: "105", name: "अमर सिंह", rel: "जगरूप", gender: "पुरुष", age: 52 },
+            { id: "sp_756", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 756, house: "105", name: "अंजली यादव", rel: "अमर सिंह", gender: "महिला", age: 19 },
+            { id: "sp_767", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 767, house: "108", name: "प्रान्शी देवी", rel: "विजय सिंह", gender: "महिला", age: 18 },
+            { id: "sp_775", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 775, house: "110", name: "रमेश", rel: "राजाराम", gender: "पुरुष", age: 52 },
+            { id: "sp_778", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 778, house: "110", name: "विनीता देवी", rel: "विकास", gender: "महिला", age: 32 },
+            { id: "sp_780", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 780, house: "110", name: "आशीष कुमार", rel: "रमेश चंद्र", gender: "पुरुष", age: 28 },
+            { id: "sp_782", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 782, house: "111", name: "अमित कुमार", rel: "नन्द किशोर", gender: "पुरुष", age: 48 },
+            { id: "sp_786", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 786, house: "111", name: "शान्ती देवी", rel: "नन्द किशोर", gender: "महिला", age: 65 },
+            { id: "sp_787", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 787, house: "111", name: "अवध किशोर", rel: "राम रतन", gender: "पुरुष", age: 62 },
+            { id: "sp_788", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 788, house: "111", name: "अरूणादेवी", rel: "अवधकिशोर", gender: "महिला", age: 59 },
+            { id: "sp_792", owner: "saurabh", village: "2-खजुरिहा (वार्ड-5)", pSr: 792, house: "111", name: "रश्मी", rel: "अमित कुमार", gender: "महिला", age: 30 },
+
+            // 3-केवटरा (वार्ड-6,7,8,9) [178 नाम]
+            { id: "sp_796", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 796, house: "112", name: "रन्नो देवी", rel: "गंगा प्रशाद", gender: "महिला", age: 49 },
+            { id: "sp_798", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 798, house: "114", name: "राजकिशोर", rel: "जियालाल", gender: "पुरुष", age: 59 },
+            { id: "sp_801", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 801, house: "115", name: "पूनम देवी", rel: "शिवकुमार", gender: "महिला", age: 40 },
+            { id: "sp_802", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 802, house: "115", name: "शिवकुमार वर्मा", rel: "परशुराम", gender: "पुरुष", age: 39 },
+            { id: "sp_803", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 803, house: "115", name: "जयकुमार", rel: "छविराम", gender: "पुरुष", age: 37 },
+            { id: "sp_804", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 804, house: "115", name: "गायत्री देवी", rel: "जय कुमार वर्मा", gender: "महिला", age: 35 },
+            { id: "sp_807", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 807, house: "117", name: "दुलारी", rel: "जगन्नाथ", gender: "महिला", age: 47 },
+            { id: "sp_809", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 809, house: "117", name: "देवनारायन", rel: "रामलाल", gender: "पुरुष", age: 37 },
+            { id: "sp_814", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 814, house: "117", name: "गुडिया", rel: "राजू", gender: "महिला", age: 23 },
+            { id: "sp_818", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 818, house: "117क", name: "शिवबरन", rel: "रामबरन", gender: "पुरुष", age: 41 },
+            { id: "sp_819", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 819, house: "117क", name: "सुशीला देवी", rel: "शिवबरन", gender: "महिला", age: 39 },
+            { id: "sp_820", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 820, house: "117क", name: "सुनील कुमार", rel: "सदासुख", gender: "पुरुष", age: 33 },
+            { id: "sp_826", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 826, house: "119", name: "गुल्या", rel: "प्रहलाद", gender: "महिला", age: 47 },
+            { id: "sp_827", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 827, house: "119", name: "प्रदीप कुमार", rel: "राम विलाश", gender: "पुरुष", age: 21 },
+            { id: "sp_833", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 833, house: "120", name: "खुशबु देवी", rel: "अभिमन्यु", gender: "महिला", age: 25 },
+            { id: "sp_835", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 835, house: "120", name: "विवेक कुमार", rel: "संतोष कुमार", gender: "पुरुष", age: 23 },
+            { id: "sp_839", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 839, house: "120", name: "अजय", rel: "सन्तोष कुमार", gender: "पुरुष", age: 19 },
+            { id: "sp_840", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 840, house: "121", name: "पुसिया", rel: "मेड़ा", gender: "महिला", age: 102 },
+            { id: "sp_849", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 849, house: "122", name: "शिव केश", rel: "सुखी लाल", gender: "पुरुष", age: 23 },
+            { id: "sp_859", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 859, house: "123", name: "धीरू", rel: "राम खेलावन", gender: "पुरुष", age: 25 },
+            { id: "sp_861", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 861, house: "123", name: "बन्दना अजीत सिंह", rel: "अजीत सिंह", gender: "महिला", age: 22 },
+            { id: "sp_862", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 862, house: "123", name: "रिंकल अजीत सिंह", rel: "अजीत सिंह", gender: "महिला", age: 20 },
+            { id: "sp_872", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 872, house: "125", name: "राकेशकुमार", rel: "राजबहादुर", gender: "पुरुष", age: 41 },
+            { id: "sp_880", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 880, house: "125", name: "सुनीत कुमार", rel: "जिलेदार", gender: "पुरुष", age: 22 },
+            { id: "sp_881", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 881, house: "125", name: "नितेश", rel: "जिलेदार", gender: "पुरुष", age: 20 },
+            { id: "sp_892", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 892, house: "126", name: "कलराज सिंह", rel: "सत्य नारायण", gender: "पुरुष", age: 25 },
+            { id: "sp_896", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 896, house: "127", name: "विनोद कुमार", rel: "रघुराज", gender: "पुरुष", age: 41 },
+            { id: "sp_901", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 901, house: "127", name: "रामा देवी", rel: "रविशंकर", gender: "महिला", age: 34 },
+            { id: "sp_917", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 917, house: "128", name: "गीता देवी", rel: "राजेन्द्र कुमार", gender: "महिला", age: 27 },
+            { id: "sp_928", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 928, house: "130", name: "विमलादेवी", rel: "सौनी", gender: "महिला", age: 33 },
+            { id: "sp_933", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 933, house: "130", name: "करीना", rel: "गोविन्द", gender: "महिला", age: 25 },
+            { id: "sp_934", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 934, house: "130", name: "सावित्री देवी", rel: "इन्द्र कुमार", gender: "महिला", age: 24 },
+            { id: "sp_935", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 935, house: "130", name: "आरती देवी", rel: "गोविन्द कुमार", gender: "महिला", age: 23 },
+            { id: "sp_936", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 936, house: "130", name: "नीरज", rel: "धर्मराज", gender: "पुरुष", age: 23 },
+            { id: "sp_937", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 937, house: "130", name: "शिव मोहन", rel: "देशराज", gender: "पुरुष", age: 19 },
+            { id: "sp_945", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 945, house: "131", name: "शैलेन्द्र", rel: "रामराज", gender: "पुरुष", age: 33 },
+            { id: "sp_957", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 957, house: "132", name: "उत्तम", rel: "उमा शंकर", gender: "पुरुष", age: 23 },
+            { id: "sp_959", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 959, house: "132", name: "अंकित", rel: "अवधेश", gender: "पुरुष", age: 20 },
+            { id: "sp_960", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 960, house: "132", name: "सुमित", rel: "अवधेश", gender: "पुरुष", age: 18 },
+            { id: "sp_966", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 966, house: "133", name: "सुधादेवी", rel: "राजकरन", gender: "महिला", age: 35 },
+            { id: "sp_970", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 970, house: "133", name: "रूबी देवी", rel: "राज किशोर", gender: "महिला", age: 19 },
+            { id: "sp_976", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 976, house: "135", name: "धर्मेंद्र", rel: "रामसजीवन", gender: "पुरुष", age: 40 },
+            { id: "sp_977", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 977, house: "135", name: "आशादेवी", rel: "रामसंजीवन", gender: "महिला", age: 35 },
+            { id: "sp_983", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 983, house: "136", name: "श्रीमती", rel: "रामलाल", gender: "महिला", age: 75 },
+            { id: "sp_985", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 985, house: "136", name: "गया श्री", rel: "राम किशुन", gender: "महिला", age: 49 },
+            { id: "sp_988", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 988, house: "136", name: "संदीप निषाद", rel: "राम किशुन", gender: "पुरुष", age: 23 },
+            { id: "sp_989", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 989, house: "136", name: "अंजना देवी", rel: "राम किशुन", gender: "महिला", age: 22 },
+            { id: "sp_990", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 990, house: "137", name: "राम दुलारी", rel: "जगन्नाथ", gender: "महिला", age: 40 },
+            { id: "sp_991", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 991, house: "137", name: "जयनरायन", rel: "रामलाल", gender: "पुरुष", age: 36 },
+            { id: "sp_1001", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1001, house: "138", name: "सुशीला", rel: "विजय कुमार", gender: "महिला", age: 29 },
+            { id: "sp_1002", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1002, house: "138", name: "विवेक कश्यप", rel: "विजय कुमार", gender: "पुरुष", age: 21 },
+            { id: "sp_1009", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1009, house: "139", name: "पूनम", rel: "सर्वेश कुमार", gender: "महिला", age: 35 },
+            { id: "sp_1011", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1011, house: "140", name: "जयदेवी", rel: "सूधर सिंह", gender: "महिला", age: 53 },
+            { id: "sp_1014", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1014, house: "140", name: "सुमित्रादेवी", rel: "रोशनलाल", gender: "महिला", age: 37 },
+            { id: "sp_1015", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1015, house: "140", name: "महविरिया", rel: "रामबहादुर", gender: "महिला", age: 30 },
+            { id: "sp_1016", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1016, house: "140", name: "विजयबहादुर", rel: "सुधर", gender: "पुरुष", age: 29 },
+            { id: "sp_1017", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1017, house: "140", name: "रामबहादुर", rel: "सुधर", gender: "पुरुष", age: 29 },
+            { id: "sp_1019", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1019, house: "141", name: "शकुन्तलादेवी", rel: "राकेश कुमार", gender: "महिला", age: 36 },
+            { id: "sp_1033", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1033, house: "143", name: "पूजा देवी", rel: "शिवगोविंद", gender: "महिला", age: 29 },
+            { id: "sp_1043", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1043, house: "144", name: "निर्मला", rel: "सुरेश", gender: "महिला", age: 28 },
+            { id: "sp_1046", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1046, house: "145", name: "महेन्द्र", rel: "छोटेलाल", gender: "पुरुष", age: 37 },
+            { id: "sp_1055", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1055, house: "146", name: "रानीदेवी", rel: "विद्यासागर", gender: "महिला", age: 38 },
+            { id: "sp_1059", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1059, house: "146", name: "राकेश", rel: "राम बहादुर", gender: "पुरुष", age: 32 },
+            { id: "sp_1069", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1069, house: "147", name: "अनित", rel: "मिलन", gender: "महिला", age: 27 },
+            { id: "sp_1075", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1075, house: "148", name: "रमाकान्ती", rel: "चन्द्राभान", gender: "महिला", age: 30 },
+            { id: "sp_1076", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1076, house: "148", name: "राम दुलारी", rel: "अजीत", gender: "महिला", age: 25 },
+            { id: "sp_1078", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1078, house: "148", name: "ज्योति", rel: "मनोज", gender: "महिला", age: 22 },
+            { id: "sp_1079", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1079, house: "148", name: "मनोज", rel: "मनफूल", gender: "पुरुष", age: 22 },
+            { id: "sp_1080", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1080, house: "148", name: "सनोज कुमार", rel: "मनफूल", gender: "पुरुष", age: 18 },
+            { id: "sp_1092", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1092, house: "151", name: "शिव पाल", rel: "अच्छे लाल", gender: "पुरुष", age: 30 },
+            { id: "sp_1094", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1094, house: "151", name: "रीना देवी", rel: "रक्ष पाल", gender: "महिला", age: 27 },
+            { id: "sp_1105", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1105, house: "152", name: "मुकेश कुमार", rel: "गुलाब सिंह", gender: "पुरुष", age: 23 },
+            { id: "sp_1120", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1120, house: "153", name: "सोनी देवी", rel: "शैलेन्द्र कुमार", gender: "महिला", age: 33 },
+            { id: "sp_1122", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1122, house: "153", name: "कमला", rel: "सुनील", gender: "महिला", age: 27 },
+            { id: "sp_1123", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1123, house: "153", name: "सोनी", rel: "सुनील कुमार", gender: "महिला", age: 26 },
+            { id: "sp_1124", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1124, house: "153", name: "रचना देवी", rel: "अनुराग", gender: "महिला", age: 23 },
+            { id: "sp_1128", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1128, house: "153", name: "सीता देवी", rel: "शिव मंगल", gender: "महिला", age: 19 },
+            { id: "sp_1132", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1132, house: "154", name: "संदीप", rel: "भोला", gender: "पुरुष", age: 29 },
+            { id: "sp_1133", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1133, house: "152", name: "विवेक कुमार", rel: "गईया लाल", gender: "पुरुष", age: 29 },
+            { id: "sp_1134", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1134, house: "154", name: "भोला", rel: "रामधीन", gender: "पुरुष", age: 55 },
+            { id: "sp_1135", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1135, house: "155", name: "रामविशाल", rel: "बदलू", gender: "पुरुष", age: 52 },
+            { id: "sp_1136", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1136, house: "155", name: "आशा देवी", rel: "रामविशाल", gender: "महिला", age: 47 },
+            { id: "sp_1141", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1141, house: "158", name: "विधा", rel: "ओम प्रकाश", gender: "महिला", age: 38 },
+            { id: "sp_1142", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1142, house: "158", name: "ओमप्रकाश", rel: "रामप्रताप", gender: "पुरुष", age: 37 },
+            { id: "sp_1143", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1143, house: "158", name: "जगतपाल", rel: "रामप्रताप", gender: "पुरुष", age: 30 },
+            { id: "sp_1144", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1144, house: "158", name: "पार्वती", rel: "जगतपाल", gender: "महिला", age: 23 },
+            { id: "sp_1148", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1148, house: "159", name: "गीता देवी", rel: "छोटे", gender: "महिला", age: 37 },
+            { id: "sp_1149", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1149, house: "159", name: "छोटे", rel: "भाईयालाल", gender: "पुरुष", age: 36 },
+            { id: "sp_1150", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1150, house: "159", name: "विद्यादेवी", rel: "ओमप्रकाश", gender: "महिला", age: 35 },
+            { id: "sp_1151", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1151, house: "159", name: "रुकमिन", rel: "शिवनरायन", gender: "महिला", age: 34 },
+            { id: "sp_1152", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1152, house: "159", name: "संगीता", rel: "ननकू", gender: "महिला", age: 32 },
+            { id: "sp_1154", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1154, house: "159", name: "विकास कुमार", rel: "भैयालाल", gender: "पुरुष", age: 27 },
+            { id: "sp_1155", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1155, house: "159", name: "रवि", rel: "भइयालाल", gender: "पुरुष", age: 20 },
+            { id: "sp_1158", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1158, house: "160", name: "शर्मिला", rel: "छेदीलाल", gender: "महिला", age: 22 },
+            { id: "sp_1159", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1159, house: "160", name: "सम्पत देवी", rel: "राजाराम", gender: "महिला", age: 20 },
+            { id: "sp_1160", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1160, house: "161", name: "बच्ची लाल", rel: "द्वारिका प्रसाद", gender: "पुरुष", age: 39 },
+            { id: "sp_1178", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1178, house: "164", name: "रमाकान्त", rel: "बैशाखी", gender: "पुरुष", age: 29 },
+            { id: "sp_1179", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1179, house: "164", name: "ललिता देवी", rel: "रमाकान्त", gender: "महिला", age: 28 },
+            { id: "sp_1180", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1180, house: "164", name: "नीशा देवी", rel: "मलखान", gender: "महिला", age: 28 },
+            { id: "sp_1182", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1182, house: "164", name: "अर्चिता", rel: "राम गोपाल", gender: "महिला", age: 19 },
+            { id: "sp_1184", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1184, house: "165", name: "राम मिलन", rel: "कल्लू", gender: "पुरुष", age: 27 },
+            { id: "sp_1185", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1185, house: "165", name: "आरती देवी", rel: "राम मिलन", gender: "महिला", age: 24 },
+            { id: "sp_1186", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1186, house: "165", name: "रामकेश", rel: "कल्लू", gender: "पुरुष", age: 22 },
+            { id: "sp_1193", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1193, house: "167", name: "लल्लू प्रसाद", rel: "राजाराम", gender: "पुरुष", age: 34 },
+            { id: "sp_1195", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1195, house: "167", name: "नीतेश", rel: "राजाराम", gender: "पुरुष", age: 28 },
+            { id: "sp_1196", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1196, house: "167", name: "सोनी", rel: "नीतेश", gender: "महिला", age: 28 },
+            { id: "sp_1197", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1197, house: "167", name: "राममिलन", rel: "कल्लू", gender: "पुरुष", age: 28 },
+            { id: "sp_1198", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1198, house: "167", name: "विकेश कुमार", rel: "संतोष कुमार", gender: "पुरुष", age: 25 },
+            { id: "sp_1199", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1199, house: "167", name: "आरती", rel: "राम मिलन", gender: "महिला", age: 24 },
+            { id: "sp_1200", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1200, house: "167", name: "ब्रजेश कुमार", rel: "संतोष कुमार", gender: "पुरुष", age: 22 },
+            { id: "sp_1201", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1201, house: "167", name: "रामकेश", rel: "कल्लू", gender: "पुरुष", age: 21 },
+            { id: "sp_1205", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1205, house: "169", name: "सोनादेवी", rel: "चन्द्रशेखर", gender: "महिला", age: 37 },
+            { id: "sp_1206", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1206, house: "169", name: "ओमश्री", rel: "गया प्रसाद", gender: "पुरुष", age: 28 },
+            { id: "sp_1212", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1212, house: "171", name: "कोमल देवी", rel: "जगतपाल", gender: "महिला", age: 18 },
+            { id: "sp_1215", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1215, house: "172", name: "गोविंद", rel: "दशरथ", gender: "पुरुष", age: 28 },
+            { id: "sp_1216", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1216, house: "172", name: "जय देवी", rel: "दसरथ", gender: "महिला", age: 21 },
+            { id: "sp_1224", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1224, house: "173", name: "संगीता देवी", rel: "अशोक कुमार", gender: "महिला", age: 20 },
+            { id: "sp_1225", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1225, house: "173", name: "ओम प्रकाश", rel: "राम सेवक", gender: "पुरुष", age: 20 },
+            { id: "sp_1226", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1226, house: "173", name: "राम केश", rel: "रामकरन", gender: "पुरुष", age: 20 },
+            { id: "sp_1240", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1240, house: "174", name: "संतराम", rel: "राजू", gender: "पुरुष", age: 23 },
+            { id: "sp_1241", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1241, house: "174", name: "शिवरानी", rel: "संतराम", gender: "महिला", age: 20 },
+            { id: "sp_1242", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1242, house: "174", name: "पूजा", rel: "सत्वीर", gender: "महिला", age: 20 },
+            { id: "sp_1243", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1243, house: "174", name: "बलराम कुमार", rel: "राजेश कुमार", gender: "पुरुष", age: 18 },
+            { id: "sp_1246", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1246, house: "175", name: "श्यामकली", rel: "महादेव", gender: "महिला", age: 55 },
+            { id: "sp_1250", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1250, house: "175", name: "नरेश", rel: "महादेव", gender: "पुरुष", age: 40 },
+            { id: "sp_1251", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1251, house: "175", name: "गीतादेवी", rel: "नरेश", gender: "महिला", age: 38 },
+            { id: "sp_1255", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1255, house: "175", name: "नीतू देवी", rel: "श्री", gender: "महिला", age: 24 },
+            { id: "sp_1256", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1256, house: "175", name: "गुडिया", rel: "राजू", gender: "महिला", age: 18 },
+            { id: "sp_1260", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1260, house: "176", name: "फूला देवी", rel: "चंदिका", gender: "महिला", age: 40 },
+            { id: "sp_1265", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1265, house: "176", name: "कोमल", rel: "केशन कुमार", gender: "महिला", age: 23 },
+            { id: "sp_1266", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1266, house: "176", name: "सविता", rel: "बालमुकुन्द", gender: "महिला", age: 22 },
+            { id: "sp_1281", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1281, house: "179", name: "अखिलेश", rel: "रमेश", gender: "पुरुष", age: 24 },
+            { id: "sp_1283", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1283, house: "180", name: "सुरिजपाल", rel: "सुखलाल", gender: "पुरुष", age: 48 },
+            { id: "sp_1290", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1290, house: "180", name: "बाबु राम", rel: "सुरित पाल", gender: "पुरुष", age: 27 },
+            { id: "sp_1291", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1291, house: "180", name: "मनेश", rel: "छोटे लाल", gender: "पुरुष", age: 24 },
+            { id: "sp_1292", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1292, house: "180", name: "प्रियंका देवी", rel: "सुरिज पाल", gender: "महिला", age: 18 },
+            { id: "sp_1296", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1296, house: "181", name: "मिथलेश", rel: "शिवपूजन", gender: "पुरुष", age: 35 },
+            { id: "sp_1297", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1297, house: "181", name: "राकेश", rel: "मोतीलाल", gender: "पुरुष", age: 34 },
+            { id: "sp_1298", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1298, house: "181", name: "शिवपूजन", rel: "ईश्वरलाल", gender: "पुरुष", age: 33 },
+            { id: "sp_1300", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1300, house: "181", name: "अरुन कुमार", rel: "ईश्वर लाल", gender: "पुरुष", age: 29 },
+            { id: "sp_1307", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1307, house: "182", name: "सावित्री", rel: "रोशन कुमार", gender: "महिला", age: 28 },
+            { id: "sp_1309", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1309, house: "182", name: "श्रवण कुमार", rel: "राम सहाय", gender: "पुरुष", age: 20 },
+            { id: "sp_1313", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1313, house: "187", name: "छोटू", rel: "राम चन्द्र", gender: "पुरुष", age: 22 },
+            { id: "sp_1315", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1315, house: "200क", name: "प्रेमा देवी", rel: "इन्द्रपाल", gender: "महिला", age: 28 },
+            { id: "sp_1317", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1317, house: "183", name: "सीमा देवी", rel: "अशोक कुमार", gender: "महिला", age: 37 },
+            { id: "sp_1319", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1319, house: "183", name: "आरती देवी", rel: "रामसजीवन", gender: "महिला", age: 30 },
+            { id: "sp_1320", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1320, house: "183", name: "अनरुप", rel: "रामसजीवन", gender: "पुरुष", age: 28 },
+            { id: "sp_1323", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1323, house: "184", name: "अशोक कुमार", rel: "रामसंजीवन", gender: "पुरुष", age: 36 },
+            { id: "sp_1331", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1331, house: "186", name: "इन्द्रजीत", rel: "राजकुमार", gender: "पुरुष", age: 22 },
+            { id: "sp_1338", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1338, house: "187", name: "मंजू देवी", rel: "रामचंद्र", gender: "महिला", age: 28 },
+            { id: "sp_1339", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1339, house: "187", name: "संदीप", rel: "रामचन्द्र", gender: "पुरुष", age: 22 },
+            { id: "sp_1340", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1340, house: "187", name: "सरस्वती", rel: "संदीप", gender: "महिला", age: 22 },
+            { id: "sp_1346", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1346, house: "188", name: "राजरानी", rel: "शिवराम", gender: "महिला", age: 37 },
+            { id: "sp_1349", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1349, house: "188", name: "कला देवी", rel: "कमल", gender: "महिला", age: 30 },
+            { id: "sp_1350", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1350, house: "188", name: "कलावती", rel: "बाबूराम", gender: "महिला", age: 29 },
+            { id: "sp_1353", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1353, house: "188", name: "लक्ष्मी देवी", rel: "अंगद", gender: "महिला", age: 23 },
+            { id: "sp_1354", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1354, house: "188", name: "दीपक कुमार", rel: "बाबु राम", gender: "पुरुष", age: 22 },
+            { id: "sp_1355", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1355, house: "188", name: "जामवंत", rel: "जगदीश", gender: "पुरुष", age: 21 },
+            { id: "sp_1358", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1358, house: "189", name: "संदीप", rel: "अच्छे लाल", gender: "पुरुष", age: 24 },
+            { id: "sp_1359", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1359, house: "189", name: "कुलदीप", rel: "अच्छे लाल", gender: "पुरुष", age: 18 },
+            { id: "sp_1364", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1364, house: "190", name: "शिवदत्त", rel: "शिवदास", gender: "पुरुष", age: 42 },
+            { id: "sp_1366", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1366, house: "190", name: "मुन्नीदेवी", rel: "परशुराम", gender: "महिला", age: 38 },
+            { id: "sp_1370", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1370, house: "190", name: "अजय कुमार", rel: "श्रीराम", gender: "पुरुष", age: 30 },
+            { id: "sp_1371", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1371, house: "190", name: "सियाजानकी", rel: "अजयकुमार", gender: "महिला", age: 29 },
+            { id: "sp_1373", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1373, house: "190", name: "कमलेश", rel: "राजेंद्र", gender: "महिला", age: 28 },
+            { id: "sp_1374", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1374, house: "191", name: "राम औतार", rel: "शिव नारायण", gender: "पुरुष", age: 65 },
+            { id: "sp_1375", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1375, house: "191", name: "रामवती", rel: "रामऔतार", gender: "महिला", age: 64 },
+            { id: "sp_1381", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1381, house: "191", name: "शारदा", rel: "सुधीर", gender: "महिला", age: 33 },
+            { id: "sp_1382", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1382, house: "192", name: "रामदुलारी", rel: "रंगपाल", gender: "महिला", age: 57 },
+            { id: "sp_1386", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1386, house: "192", name: "रंगपाल", rel: "गंगाविशुन", gender: "पुरुष", age: 54 },
+            { id: "sp_1396", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1396, house: "192", name: "दीपक", rel: "धरम पाल", gender: "पुरुष", age: 21 },
+            { id: "sp_1397", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1397, house: "192", name: "राजा", rel: "धरम पाल", gender: "पुरुष", age: 18 },
+            { id: "sp_1402", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1402, house: "193", name: "शशी देवी", rel: "दिनेश", gender: "महिला", age: 28 },
+            { id: "sp_1403", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1403, house: "193", name: "पवन कुमार", rel: "राकेश कुमार", gender: "पुरुष", age: 22 },
+            { id: "sp_1404", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1404, house: "193", name: "पिंकी देवी", rel: "राकेश कुमार", gender: "महिला", age: 18 },
+            { id: "sp_1410", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1410, house: "194", name: "अवधेश", rel: "रामजीत", gender: "पुरुष", age: 32 },
+            { id: "sp_1411", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1411, house: "194", name: "दीपक कुमार", rel: "रामजीत", gender: "पुरुष", age: 28 },
+            { id: "sp_1412", owner: "saurabh", village: "3-केवटरा (वार्ड-6,7,8,9)", pSr: 1412, house: "194", name: "सोनी", rel: "दीपक कुमार", gender: "महिला", age: 24 }
+        ];
+
+        // 2B. Complete Pre-Loaded 211 Records for Mohit Verma — Bhag Sankhya 51 (पिपौरी वार्ड 9, 10, 11)
+        const MOHIT_BASE_DATA = [
+            { id: "mv_1446", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1446, house: "200", name: "पुष्पादेवी", rel: "अनिलकुमार", gender: "महिला", age: 41 },
+            { id: "mv_1448", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1448, house: "200", name: "अजयपाल", rel: "चंद्रपाल", gender: "पुरुष", age: 37 },
+            { id: "mv_1449", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1449, house: "200", name: "आशीष कुमार", rel: "रंगपाल", gender: "पुरुष", age: 29 },
+            { id: "mv_1451", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1451, house: "200", name: "राधा", rel: "अजय पाल", gender: "महिला", age: 28 },
+            { id: "mv_1452", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1452, house: "200 क", name: "सुरेखा देवी", rel: "अजीत कुमार", gender: "महिला", age: 29 },
+            { id: "mv_1453", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1453, house: "200 ख", name: "आलोक कुमार", rel: "कृष्णा पाल", gender: "पुरुष", age: 25 },
+            { id: "mv_1454", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1454, house: "200 क", name: "रूपरानी", rel: "रामपाल", gender: "महिला", age: 64 },
+            { id: "mv_1456", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1456, house: "200 क", name: "अनिल कुमार", rel: "रामपाल", gender: "पुरुष", age: 47 },
+            { id: "mv_1461", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1461, house: "200 ख", name: "रंगपाल", rel: "रघुनंदन", gender: "पुरुष", age: 57 },
+            { id: "mv_1463", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1463, house: "200", name: "सुमन देवी", rel: "रंगपाल", gender: "महिला", age: 55 },
+            { id: "mv_1466", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1466, house: "201", name: "गुड़िया देवी", rel: "राम सहाय", gender: "महिला", age: 42 },
+            { id: "mv_1471", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1471, house: "202", name: "चन्द्रिका", rel: "फूलचन्द्र", gender: "पुरुष", age: 53 },
+            { id: "mv_1472", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1472, house: "202", name: "हरीलाल", rel: "चन्द्रिका", gender: "पुरुष", age: 53 },
+            { id: "mv_1473", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1473, house: "202", name: "कुसमा देवी", rel: "हरी लाल", gender: "महिला", age: 52 },
+            { id: "mv_1478", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1478, house: "202", name: "आरती", rel: "सुरेश", gender: "महिला", age: 37 },
+            { id: "mv_1479", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1479, house: "202", name: "नीरज", rel: "कल्लू", gender: "पुरुष", age: 32 },
+            { id: "mv_1480", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1480, house: "202", name: "अनीता", rel: "नीरज", gender: "महिला", age: 30 },
+            { id: "mv_1483", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1483, house: "202", name: "सुरेंद्र कुमार", rel: "फूलचंद्र", gender: "पुरुष", age: 28 },
+            { id: "mv_1484", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1484, house: "202", name: "रवि कुमार", rel: "रामचन्द्र", gender: "पुरुष", age: 23 },
+            { id: "mv_1485", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1485, house: "202", name: "रोशन कुमार", rel: "लल्लू", gender: "पुरुष", age: 22 },
+            { id: "mv_1487", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1487, house: "202", name: "साहिल कुमार", rel: "रामचन्द्र", gender: "पुरुष", age: 21 },
+            { id: "mv_1493", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1493, house: "203", name: "सर्वेश कुमार", rel: "श्री कृष्ण", gender: "पुरुष", age: 23 },
+            { id: "mv_1496", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1496, house: "204", name: "रामप्रताप", rel: "देवी चरन", gender: "पुरुष", age: 53 },
+            { id: "mv_1498", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1498, house: "204", name: "प्रतिभा देवी", rel: "रामप्रताप", gender: "महिला", age: 49 },
+            { id: "mv_1500", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1500, house: "204", name: "नेहा देवी", rel: "दीपक कुमार", gender: "महिला", age: 43 },
+            { id: "mv_1502", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1502, house: "204", name: "दीपक कुमार", rel: "रामप्रताप", gender: "पुरुष", age: 25 },
+            { id: "mv_1503", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1503, house: "204", name: "अर्पित कनौजिया", rel: "रामबाबू", gender: "पुरुष", age: 21 },
+            { id: "mv_1504", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1504, house: "204", name: "आकाश चौधरी", rel: "राम प्रताप", gender: "पुरुष", age: 20 },
+            { id: "mv_1505", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1505, house: "204", name: "अंशू कनौजिया", rel: "संतोष कुमार", gender: "महिला", age: 19 },
+            { id: "mv_1506", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1506, house: "204", name: "अतुल", rel: "राम बाबू", gender: "पुरुष", age: 30 },
+            { id: "mv_1513", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1513, house: "205", name: "सीता देवी", rel: "राज कुमार", gender: "महिला", age: 29 },
+            { id: "mv_1514", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1514, house: "205", name: "राज कुमार", rel: "जगरूप", gender: "पुरुष", age: 29 },
+            { id: "mv_1515", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1515, house: "205", name: "दिलिप कुमार", rel: "छेदालाल", gender: "पुरुष", age: 28 },
+            { id: "mv_1516", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1516, house: "205", name: "हरी लाल", rel: "राम बहदुर", gender: "पुरुष", age: 25 },
+            { id: "mv_1517", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1517, house: "205", name: "ऑनल", rel: "दया राम", gender: "पुरुष", age: 25 },
+            { id: "mv_1518", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1518, house: "205", name: "शिखा देवी", rel: "दिलीप कुमार", gender: "महिला", age: 21 },
+            { id: "mv_1520", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1520, house: "205", name: "अंकिता देवी", rel: "जगरूप", gender: "महिला", age: 21 },
+            { id: "mv_1521", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1521, house: "205", name: "पार्वती", rel: "दयाराम", gender: "महिला", age: 19 },
+            { id: "mv_1522", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1522, house: "206", name: "गयावती", rel: "मातादीन", gender: "महिला", age: 83 },
+            { id: "mv_1527", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1527, house: "206", name: "शिवसहाय", rel: "हीरालाल", gender: "पुरुष", age: 37 },
+            { id: "mv_1528", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1528, house: "206", name: "अभिषेक कुमार", rel: "भवानी दीन", gender: "पुरुष", age: 23 },
+            { id: "mv_1529", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1529, house: "206", name: "रामलखन", rel: "भवानीदीन", gender: "पुरुष", age: 23 },
+            { id: "mv_1530", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1530, house: "206", name: "हरिमोहन", rel: "सूबेदार", gender: "पुरुष", age: 21 },
+            { id: "mv_1534", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1534, house: "207", name: "सावित्री देवी", rel: "रोशन कुमार", gender: "महिला", age: 26 },
+            { id: "mv_1539", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1539, house: "208", name: "बीरेन्द्र कुमार", rel: "हरिगोविन्द", gender: "पुरुष", age: 28 },
+            { id: "mv_1540", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1540, house: "208", name: "दिव्या शुक्ला", rel: "जितेन्द्र कुमार", gender: "महिला", age: 28 },
+            { id: "mv_1541", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1541, house: "208", name: "अनीता देवी", rel: "हर गोविन्द", gender: "महिला", age: 25 },
+            { id: "mv_1544", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1544, house: "209", name: "बसन्तू", rel: "राजबहादुर", gender: "पुरुष", age: 39 },
+            { id: "mv_1545", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1545, house: "209", name: "सुधा", rel: "बसन्तू", gender: "महिला", age: 37 },
+            { id: "mv_1546", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1546, house: "209", name: "दीपक कुमार", rel: "राजबहादुर", gender: "पुरुष", age: 35 },
+            { id: "mv_1547", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1547, house: "209", name: "किरन देवी", rel: "दीपक कुमार", gender: "महिला", age: 30 },
+            { id: "mv_1548", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1548, house: "209", name: "अमित कुमार", rel: "बसंत लाल", gender: "पुरुष", age: 19 },
+            { id: "mv_1549", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1549, house: "210", name: "सूरज बली", rel: "बृजलाल", gender: "पुरुष", age: 65 },
+            { id: "mv_1553", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1553, house: "210", name: "राधा देवी", rel: "नीरज कुमार", gender: "महिला", age: 27 },
+            { id: "mv_1554", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1554, house: "211", name: "महावीर", rel: "कामता", gender: "पुरुष", age: 55 },
+            { id: "mv_1558", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1558, house: "211", name: "रमा देवी", rel: "सतेंद्र कुमार", gender: "महिला", age: 32 },
+            { id: "mv_1559", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1559, house: "211", name: "मंजू देवी", rel: "महेन्द्र कुमार", gender: "महिला", age: 25 },
+            { id: "mv_1560", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1560, house: "211", name: "नारेन्द्र कुमार", rel: "कामता", gender: "पुरुष", age: 24 },
+            { id: "mv_1561", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1561, house: "211", name: "प्रतीक्षा", rel: "नरेन्द्र कुमार", gender: "महिला", age: 23 },
+            { id: "mv_1562", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1562, house: "211", name: "सुरेन्द्र कुमार", rel: "कामता प्रसाद", gender: "पुरुष", age: 19 },
+            { id: "mv_1563", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1563, house: "212", name: "रघुवीर प्रसाद", rel: "कमल किशोर", gender: "पुरुष", age: 40 },
+            { id: "mv_1564", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1564, house: "212", name: "निशा देवी", rel: "कमल किशोर", gender: "महिला", age: 39 },
+            { id: "mv_1565", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1565, house: "212", name: "राशी", rel: "कमल किशोर", gender: "महिला", age: 18 },
+            { id: "mv_1567", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1567, house: "213", name: "राम प्रसाद", rel: "परशुराम", gender: "पुरुष", age: 62 },
+            { id: "mv_1573", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1573, house: "213", name: "शिवम", rel: "गुलाब सिंह", gender: "पुरुष", age: 24 },
+            { id: "mv_1574", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1574, house: "213", name: "शुभम कुमार", rel: "गुलाब सिंह", gender: "पुरुष", age: 20 },
+            { id: "mv_1575", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1575, house: "213", name: "अवनीत कुमार", rel: "परशुराम", gender: "पुरुष", age: 20 },
+            { id: "mv_1576", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1576, house: "214 ख", name: "साधना देवी", rel: "मनोज कुमार", gender: "महिला", age: 33 },
+            { id: "mv_1579", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1579, house: "215", name: "रामाधीन", rel: "छोटे लाल", gender: "पुरुष", age: 61 },
+            { id: "mv_1580", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1580, house: "215", name: "उमादेवी", rel: "छोटेलाल", gender: "महिला", age: 59 },
+            { id: "mv_1585", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1585, house: "215", name: "रामधनी", rel: "बंटा", gender: "पुरुष", age: 46 },
+            { id: "mv_1586", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1586, house: "215", name: "सवितादेवी", rel: "बन्टा", gender: "महिला", age: 40 },
+            { id: "mv_1587", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1587, house: "215", name: "सीलू कुमार", rel: "छोटेलाल", gender: "पुरुष", age: 33 },
+            { id: "mv_1588", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1588, house: "215", name: "रविता देवी", rel: "परागीलाल", gender: "महिला", age: 30 },
+            { id: "mv_1589", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1589, house: "215", name: "बबली देवी", rel: "सीलू कुमार", gender: "महिला", age: 30 },
+            { id: "mv_1590", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1590, house: "215", name: "विकाश", rel: "छोटेलाल", gender: "पुरुष", age: 28 },
+            { id: "mv_1597", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1597, house: "216", name: "शशिकांती", rel: "परशुराम", gender: "महिला", age: 45 },
+            { id: "mv_1604", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1604, house: "216", name: "शिवम", rel: "बद्री प्रसाद", gender: "पुरुष", age: 25 },
+            { id: "mv_1606", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1606, house: "216", name: "आयूष", rel: "बद्री प्रसाद", gender: "पुरुष", age: 19 },
+            { id: "mv_1607", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1607, house: "216", name: "नितिन केदार नाथ", rel: "केदार नाथ", gender: "पुरुष", age: 18 },
+            { id: "mv_1609", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1609, house: "217", name: "उमा शंकर", rel: "चन्द्र भूषण", gender: "पुरुष", age: 72 },
+            { id: "mv_1610", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1610, house: "217", name: "निरंजना", rel: "करूणा शंकर", gender: "महिला", age: 70 },
+            { id: "mv_1612", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1612, house: "217", name: "जयदेवी", rel: "चन्द्र भूषण", gender: "महिला", age: 60 },
+            { id: "mv_1614", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1614, house: "217", name: "उमेश कुमार", rel: "करूणाशंकर", gender: "पुरुष", age: 39 },
+            { id: "mv_1615", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1615, house: "217", name: "सुलभ तिवारी", rel: "उमाशंकर", gender: "पुरुष", age: 33 },
+            { id: "mv_1616", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1616, house: "217", name: "आसतोष तिवारी", rel: "शिवशंकर", gender: "पुरुष", age: 33 },
+            { id: "mv_1618", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1618, house: "217", name: "आशीष त्रिपाठी", rel: "उमाशंकर त्रिपाठी", gender: "पुरुष", age: 30 },
+            { id: "mv_1619", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1619, house: "217", name: "कालिंद्री त्रिपाठी", rel: "उमेश कुमार", gender: "महिला", age: 30 },
+            { id: "mv_1621", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1621, house: "217", name: "साक्षी दीक्षित", rel: "आशुतोष", gender: "महिला", age: 28 },
+            { id: "mv_1622", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1622, house: "217", name: "एकता तिवारी", rel: "शिव संकर तिवारी", gender: "महिला", age: 24 },
+            { id: "mv_1623", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1623, house: "218", name: "राजेन्द्र कुमार", rel: "रामस्वरूप", gender: "पुरुष", age: 63 },
+            { id: "mv_1625", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1625, house: "218", name: "सरोज देवी", rel: "राजेन्द्र कुमार", gender: "महिला", age: 58 },
+            { id: "mv_1627", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1627, house: "218", name: "हिमांशु", rel: "कौशल किशोर", gender: "पुरुष", age: 24 },
+            { id: "mv_1628", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1628, house: "218", name: "सुधांशु द्विवेदी", rel: "कौशल किशोर", gender: "पुरुष", age: 21 },
+            { id: "mv_1634", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1634, house: "219", name: "कामिनी", rel: "जगदीश", gender: "महिला", age: 25 },
+            { id: "mv_1640", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1640, house: "220", name: "श्याम जी", rel: "अवधेश", gender: "पुरुष", age: 28 },
+            { id: "mv_1641", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1641, house: "220", name: "प्रज्ञा", rel: "रामजी", gender: "महिला", age: 28 },
+            { id: "mv_1644", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1644, house: "220", name: "शिव सुंदर", rel: "राज कुमार", gender: "पुरुष", age: 30 },
+            { id: "mv_1647", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1647, house: "221", name: "कृष्ण कुमार", rel: "दिनेश", gender: "पुरुष", age: 35 },
+            { id: "mv_1648", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1648, house: "221", name: "ज्योति देवी", rel: "दिनेश", gender: "महिला", age: 28 },
+            { id: "mv_1649", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1649, house: "221", name: "रोहिणी तिवारी", rel: "उमेश", gender: "महिला", age: 27 },
+            { id: "mv_1650", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1650, house: "221", name: "हरी ओम", rel: "दिनेश कुमार", gender: "पुरुष", age: 23 },
+            { id: "mv_1651", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1651, house: "221", name: "विकास कुमार", rel: "दिनेश कुमार", gender: "पुरुष", age: 23 },
+            { id: "mv_1656", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1656, house: "222", name: "सारिका", rel: "राहुल", gender: "महिला", age: 26 },
+            { id: "mv_1657", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1657, house: "222", name: "गौरव दिव्वेदी", rel: "शिवकुमार", gender: "पुरुष", age: 23 },
+            { id: "mv_1659", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1659, house: "225", name: "विभा देवी", rel: "पंकज कुमार", gender: "महिला", age: 26 },
+            { id: "mv_1660", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1660, house: "227", name: "अभिषेक शुक्ला", rel: "सुरेन्द्र कुमार शुक्ला", gender: "पुरुष", age: 23 },
+            { id: "mv_1665", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1665, house: "222", name: "शिवप्यारी", rel: "रामबालक", gender: "महिला", age: 63 },
+            { id: "mv_1671", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1671, house: "222", name: "शुभा", rel: "ओम प्रकाश", gender: "महिला", age: 19 },
+            { id: "mv_1673", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1673, house: "223", name: "मोहन श्याम दुबे", rel: "सुखदीन दुबे", gender: "पुरुष", age: 39 },
+            { id: "mv_1674", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1674, house: "223", name: "उमादेवी दुबे", rel: "मोहनश्यामदुबे", gender: "महिला", age: 39 },
+            { id: "mv_1675", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1675, house: "223", name: "ज्योति देवी", rel: "राधेश्याम", gender: "महिला", age: 35 },
+            { id: "mv_1677", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1677, house: "224", name: "रमेश प्रसाद", rel: "सुरजदीन", gender: "पुरुष", age: 63 },
+            { id: "mv_1678", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1678, house: "224", name: "नरेश कुमार", rel: "सूरजदीन", gender: "पुरुष", age: 60 },
+            { id: "mv_1679", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1679, house: "224", name: "मन्जूदेवी", rel: "रमेश प्रसाद", gender: "महिला", age: 60 },
+            { id: "mv_1680", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1680, house: "224", name: "विन्दू", rel: "नरेश कुमार", gender: "महिला", age: 57 },
+            { id: "mv_1683", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1683, house: "224", name: "क्षमा", rel: "राकेश कुमार", gender: "महिला", age: 23 },
+            { id: "mv_1689", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1689, house: "226", name: "अरविन्दकुमार", rel: "होरी लाल", gender: "पुरुष", age: 59 },
+            { id: "mv_1690", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1690, house: "226", name: "राधा", rel: "अरविन्द्र कुमार", gender: "महिला", age: 57 },
+            { id: "mv_1692", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1692, house: "226", name: "पुष्पा", rel: "रविशंकर", gender: "महिला", age: 50 },
+            { id: "mv_1693", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1693, house: "226", name: "मोहित तिवारी", rel: "अरविन्द्र कुमार", gender: "पुरुष", age: 33 },
+            { id: "mv_1694", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1694, house: "226", name: "नेहा तिवारी", rel: "मोहित", gender: "महिला", age: 32 },
+            { id: "mv_1695", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1695, house: "226", name: "रिचा देवी", rel: "रविशंकर", gender: "महिला", age: 29 },
+            { id: "mv_1696", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1696, house: "226", name: "रोहित कुमार", rel: "अरविन्द कुमार", gender: "पुरुष", age: 29 },
+            { id: "mv_1697", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1697, house: "226", name: "कुमकुम तिवारी", rel: "रोहित कुमार", gender: "महिला", age: 27 },
+            { id: "mv_1699", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1699, house: "227", name: "अनुसूइया", rel: "सुरेन्द्र कुमार", gender: "महिला", age: 54 },
+            { id: "mv_1700", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1700, house: "227", name: "मनोज", rel: "विरेन्द्र", gender: "पुरुष", age: 40 },
+            { id: "mv_1701", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1701, house: "227", name: "सपना देवी", rel: "मनोज", gender: "महिला", age: 39 },
+            { id: "mv_1702", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1702, house: "227", name: "विनोद", rel: "विरेन्द्र", gender: "पुरुष", age: 38 },
+            { id: "mv_1703", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1703, house: "227", name: "कान्तीदेवी", rel: "विनोद", gender: "महिला", age: 37 },
+            { id: "mv_1704", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1704, house: "227", name: "प्रमोद", rel: "विरेन्द्र", gender: "पुरुष", age: 36 },
+            { id: "mv_1705", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1705, house: "227", name: "आरती देवी", rel: "प्रमोद कुमार", gender: "महिला", age: 34 },
+            { id: "mv_1706", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1706, house: "227", name: "दीपू", rel: "विरेन्द्र", gender: "पुरुष", age: 33 },
+            { id: "mv_1709", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1709, house: "227", name: "अंजली देवी", rel: "सुरेन्द्र कुमार", gender: "महिला", age: 22 },
+            { id: "mv_1710", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1710, house: "227", name: "प्राची", rel: "सुमित", gender: "महिला", age: 22 },
+            { id: "mv_1711", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1711, house: "228", name: "विजय", rel: "रामशंकर", gender: "पुरुष", age: 52 },
+            { id: "mv_1712", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1712, house: "228", name: "अनीता", rel: "विजय", gender: "महिला", age: 51 },
+            { id: "mv_1714", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1714, house: "228", name: "राजकिशोर", rel: "रामशंकर", gender: "पुरुष", age: 47 },
+            { id: "mv_1716", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1716, house: "228", name: "शोभादेवी", rel: "रामकिशोर", gender: "महिला", age: 41 },
+            { id: "mv_1717", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1717, house: "228", name: "अरुणेश", rel: "विजय", gender: "पुरुष", age: 30 },
+            { id: "mv_1718", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1718, house: "228", name: "रानी", rel: "अरुणेश द्विवेदी", gender: "महिला", age: 30 },
+            { id: "mv_1719", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1719, house: "228", name: "सुमित", rel: "विजय", gender: "पुरुष", age: 28 },
+            { id: "mv_1721", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1721, house: "228", name: "अतुल", rel: "विजय किशोर", gender: "पुरुष", age: 25 },
+            { id: "mv_1722", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1722, house: "228", name: "अनुज कुमार", rel: "विजय किशोर", gender: "पुरुष", age: 24 },
+            { id: "mv_1723", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1723, house: "228", name: "विपुल", rel: "कमल किशोर", gender: "पुरुष", age: 22 },
+            { id: "mv_1724", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1724, house: "228", name: "अपेक्षा द्विवेदी", rel: "राज किशोर", gender: "महिला", age: 21 },
+            { id: "mv_1725", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1725, house: "229", name: "सालिकराम", rel: "बदलूप्रसाद", gender: "पुरुष", age: 67 },
+            { id: "mv_1731", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1731, house: "229", name: "पूजा", rel: "अनीष कुमार", gender: "महिला", age: 28 },
+            { id: "mv_1732", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1732, house: "229", name: "दीक्षा", rel: "आशीष", gender: "महिला", age: 19 },
+            { id: "mv_1738", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1738, house: "230", name: "लक्ष्मी दीक्षित", rel: "आशुतोष कुमार", gender: "महिला", age: 32 },
+            { id: "mv_1740", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1740, house: "231", name: "विटोला", rel: "रामसनेही", gender: "महिला", age: 63 },
+            { id: "mv_1741", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1741, house: "231", name: "रामबिहारी", rel: "रामसनेही", gender: "पुरुष", age: 46 },
+            { id: "mv_1742", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1742, house: "231", name: "सन्नोदेवी", rel: "रामबिहारी", gender: "महिला", age: 44 },
+            { id: "mv_1743", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1743, house: "231", name: "कृष्णबिहारी", rel: "रामसनेही", gender: "पुरुष", age: 37 },
+            { id: "mv_1744", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1744, house: "231", name: "रोहणी देवी", rel: "कृष्ण बिहारी", gender: "महिला", age: 36 },
+            { id: "mv_1747", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1747, house: "232", name: "सुभी देवी", rel: "सन्तराम दुबे", gender: "महिला", age: 28 },
+            { id: "mv_1748", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1748, house: "232", name: "अंकिता द्विवेदी", rel: "संतराम", gender: "महिला", age: 27 },
+            { id: "mv_1749", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1749, house: "232", name: "अजय द्विवेदी", rel: "संतराम", gender: "पुरुष", age: 22 },
+            { id: "mv_1750", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1750, house: "232", name: "रोहित", rel: "नवल किशोर", gender: "पुरुष", age: 22 },
+            { id: "mv_1753", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1753, house: "233", name: "सुभाष", rel: "शिव शरण", gender: "पुरुष", age: 29 },
+            { id: "mv_1754", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1754, house: "233", name: "शुभम", rel: "शिव शरण", gender: "पुरुष", age: 29 },
+            { id: "mv_1755", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1755, house: "233", name: "निहारिका द्विवेदी", rel: "सुभाष", gender: "महिला", age: 29 },
+            { id: "mv_1759", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1759, house: "234", name: "खुशबू", rel: "श्यामकरन", gender: "महिला", age: 37 },
+            { id: "mv_1760", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1760, house: "234", name: "अनीता देवी", rel: "मान सिंह", gender: "महिला", age: 37 },
+            { id: "mv_1761", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1761, house: "234", name: "प्रियंका", rel: "शिवकरन", gender: "महिला", age: 35 },
+            { id: "mv_1762", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1762, house: "234", name: "पवन", rel: "श्यामकरन", gender: "पुरुष", age: 30 },
+            { id: "mv_1764", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1764, house: "235", name: "फूलमती", rel: "बद्री", gender: "महिला", age: 62 },
+            { id: "mv_1765", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1765, house: "235", name: "कुसमा", rel: "राम लाल", gender: "महिला", age: 54 },
+            { id: "mv_1775", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1775, house: "235", name: "मोनू", rel: "विनोद कुमार", gender: "पुरुष", age: 35 },
+            { id: "mv_1778", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1778, house: "235", name: "सोनी देवी", rel: "जगरूप", gender: "महिला", age: 29 },
+            { id: "mv_1779", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1779, house: "235", name: "पवन कुमार", rel: "रामलाल", gender: "पुरुष", age: 28 },
+            { id: "mv_1780", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1780, house: "235", name: "मनीषा देवी", rel: "पवन कुमार", gender: "महिला", age: 27 },
+            { id: "mv_1781", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1781, house: "235", name: "सुषमा देवी", rel: "करन", gender: "महिला", age: 24 },
+            { id: "mv_1782", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1782, house: "235", name: "नकुल कुमार", rel: "बाबु मान सिंह", gender: "पुरुष", age: 23 },
+            { id: "mv_1783", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1783, house: "235", name: "करन सिंह", rel: "नवल किशोर", gender: "पुरुष", age: 23 },
+            { id: "mv_1784", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1784, house: "235", name: "वीरू सिंह", rel: "मान सिंह", gender: "पुरुष", age: 20 },
+            { id: "mv_1785", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1785, house: "235", name: "अरुण कुमार", rel: "अमर सिंह", gender: "पुरुष", age: 20 },
+            { id: "mv_1786", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1786, house: "235", name: "अनू देवी", rel: "अमर सिंह", gender: "महिला", age: 19 },
+            { id: "mv_1787", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1787, house: "235", name: "मोहित", rel: "नवल किशोर", gender: "पुरुष", age: 18 },
+            { id: "mv_1789", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1789, house: "236", name: "ननकी", rel: "मोतीलाल", gender: "महिला", age: 79 },
+            { id: "mv_1790", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1790, house: "236", name: "मोती लाल", rel: "रामरतन", gender: "पुरुष", age: 79 },
+            { id: "mv_1792", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1792, house: "236", name: "बृजराज", rel: "रामप्रसाद", gender: "पुरुष", age: 68 },
+            { id: "mv_1794", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1794, house: "236", name: "रामखेलावन", rel: "राम कृपाल", gender: "पुरुष", age: 63 },
+            { id: "mv_1795", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1795, house: "236", name: "रामकली", rel: "शिवराज", gender: "महिला", age: 61 },
+            { id: "mv_1797", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1797, house: "236", name: "रामप्रसाद", rel: "रामरतन", gender: "पुरुष", age: 53 },
+            { id: "mv_1798", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1798, house: "236", name: "मायादेवी", rel: "गजराज", gender: "महिला", age: 49 },
+            { id: "mv_1802", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1802, house: "236", name: "लक्ष्मीदेवी", rel: "लालसिंह", gender: "महिला", age: 40 },
+            { id: "mv_1803", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1803, house: "236", name: "अमितकुमार", rel: "मोतीलाल", gender: "पुरुष", age: 38 },
+            { id: "mv_1804", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1804, house: "236", name: "विपिन कुमार", rel: "शिवराज", gender: "पुरुष", age: 37 },
+            { id: "mv_1805", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1805, house: "236", name: "राजू", rel: "रघुराज", gender: "पुरुष", age: 37 },
+            { id: "mv_1807", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1807, house: "236", name: "दिलीप कुमार", rel: "शिवराज", gender: "पुरुष", age: 35 },
+            { id: "mv_1808", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1808, house: "236", name: "गौरी देवी", rel: "राजू", gender: "महिला", age: 34 },
+            { id: "mv_1809", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1809, house: "236", name: "पुष्पा देवी", rel: "अमित कुमार", gender: "महिला", age: 34 },
+            { id: "mv_1810", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1810, house: "236", name: "पवन", rel: "शिवराज", gender: "पुरुष", age: 30 },
+            { id: "mv_1814", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1814, house: "236", name: "नीशू देवी", rel: "गजराज", gender: "महिला", age: 22 },
+            { id: "mv_1815", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1815, house: "236", name: "अभिषेक कुमार", rel: "जयकरन सिंह", gender: "पुरुष", age: 21 },
+            { id: "mv_1816", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1816, house: "236", name: "अंजली देवी", rel: "जयकरन सिंह", gender: "महिला", age: 21 },
+            { id: "mv_1817", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1817, house: "236", name: "अमन कुमार", rel: "जय करन", gender: "पुरुष", age: 20 },
+            { id: "mv_1825", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1825, house: "237", name: "सोनू सिंह", rel: "संतोष", gender: "पुरुष", age: 35 },
+            { id: "mv_1829", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1829, house: "237", name: "रिंकी देवी", rel: "कपूर सिंह", gender: "महिला", age: 28 },
+            { id: "mv_1830", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1830, house: "237", name: "अनुज कुमार", rel: "मान सिंह", gender: "पुरुष", age: 27 },
+            { id: "mv_1831", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1831, house: "237", name: "सपना देवी", rel: "अनुज कुमार", gender: "महिला", age: 26 },
+            { id: "mv_1832", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1832, house: "237", name: "लवली देवी", rel: "मान सिंह", gender: "महिला", age: 22 },
+            { id: "mv_1833", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1833, house: "237", name: "अष्मिता", rel: "अजय सिंह", gender: "महिला", age: 21 },
+            { id: "mv_1834", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1834, house: "237", name: "विनय कुमार", rel: "मान सिंह", gender: "पुरुष", age: 20 },
+            { id: "mv_1835", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1835, house: "237", name: "अनिल कुमार", rel: "अजय सिंह", gender: "पुरुष", age: 18 },
+            { id: "mv_1838", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1838, house: "238", name: "शिवगोपाल", rel: "सूर्यभान", gender: "पुरुष", age: 59 },
+            { id: "mv_1839", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1839, house: "238", name: "अनीतादेवी", rel: "शिवगोपाल", gender: "महिला", age: 57 },
+            { id: "mv_1840", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1840, house: "238", name: "शिवशंकर", rel: "शिवगोपाल", gender: "पुरुष", age: 32 },
+            { id: "mv_1841", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1841, house: "238", name: "नीरज कुमार", rel: "शिवगोपाल", gender: "पुरुष", age: 28 },
+            { id: "mv_1842", owner: "mohit", village: "पिपौरी (वार्ड 9,10,11)", pSr: 1842, house: "235", name: "श्यामलाल", rel: "बद्री", gender: "पुरुष", age: 62 }
+        ];
+
+        // 3. Application State
+        let activeOwnerSection = 'saurabh'; // 'saurabh' | 'mohit'
+        let selectedVillage = 'ALL';
+        let sortByHouse = false;
+        let customUploadedVoters = [];
+        let voterStatusMap = {};
+        let voterRemarkMap = {};
+        let currentlyFilteredData = [];
+
+        let currentUser = null;
+        let adminLocks = { saurabhUid: null, mohitUid: null };
+        let loggedInAdminRole = null; // 'saurabh' | 'mohit' | null
+        let selectedAdminSlotInModal = 'saurabh';
+        let visitorLogsList = [];
+
+        // Cloud Bridge hooks (populated asynchronously by Firebase module if configured)
+        window._cloudBridge = {
+            enabled: false,
+            saveAdminLocks: null,
+            saveVoterStatus: null,
+            saveVoterRemark: null,
+            saveCustomVotersBatch: null,
+            saveSingleVoter: null,
+            saveVisitorLog: null,
+            clearVisitorLogs: null,
+            googleSignIn: null,
+            signOut: null
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'blo-saurabh-singh-pipauri';
+        const LS_KEYS = {
+            STATUS_MAP: `${appId}_status_map_v2`,
+            REMARK_MAP: `${appId}_remark_map_v2`,
+            CUSTOM_VOTERS: `${appId}_custom_voters_v2`,
+            ADMIN_LOCKS: `${appId}_admin_locks_v2`,
+            LOCAL_UID: `${appId}_local_session_uid_v2`,
+            VISITOR_ID: `${appId}_unique_device_visitor_id_v2`,
+            VISITOR_LOGS: `${appId}_visitor_activity_logs_v2`
+        };
+
+        // 4. Safe Local Storage Helpers
+        function getOrCreateLocalSessionUid() {
+            try {
+                let uid = localStorage.getItem(LS_KEYS.LOCAL_UID);
+                if (!uid) {
+                    uid = 'local_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+                    localStorage.setItem(LS_KEYS.LOCAL_UID, uid);
+                }
+                return uid;
+            } catch (e) {
+                return 'session_' + Date.now().toString(36);
+            }
+        }
+
+        function getOrCreateUniqueVisitorId() {
+            try {
+                let vid = localStorage.getItem(LS_KEYS.VISITOR_ID);
+                if (!vid) {
+                    const randPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    vid = `DEV-${randPart}`;
+                    localStorage.setItem(LS_KEYS.VISITOR_ID, vid);
+                }
+                return vid;
+            } catch (e) {
+                return 'DEV-GUEST';
+            }
+        }
+
+        function loadLocalFallbackState() {
+            try {
+                const rawStatus = localStorage.getItem(LS_KEYS.STATUS_MAP);
+                if (rawStatus) voterStatusMap = JSON.parse(rawStatus);
+
+                const rawRemark = localStorage.getItem(LS_KEYS.REMARK_MAP);
+                if (rawRemark) voterRemarkMap = JSON.parse(rawRemark);
+
+                const rawCustom = localStorage.getItem(LS_KEYS.CUSTOM_VOTERS);
+                if (rawCustom) customUploadedVoters = JSON.parse(rawCustom);
+
+                const rawLocks = localStorage.getItem(LS_KEYS.ADMIN_LOCKS);
+                if (rawLocks) adminLocks = JSON.parse(rawLocks);
+
+                const rawLogs = localStorage.getItem(LS_KEYS.VISITOR_LOGS);
+                if (rawLogs) visitorLogsList = JSON.parse(rawLogs);
+            } catch (e) {
+                console.warn("Local storage load warning:", e);
+            }
+        }
+
+        function persistLocalFallbackState() {
+            try {
+                localStorage.setItem(LS_KEYS.STATUS_MAP, JSON.stringify(voterStatusMap));
+                localStorage.setItem(LS_KEYS.REMARK_MAP, JSON.stringify(voterRemarkMap));
+                localStorage.setItem(LS_KEYS.CUSTOM_VOTERS, JSON.stringify(customUploadedVoters));
+                localStorage.setItem(LS_KEYS.ADMIN_LOCKS, JSON.stringify(adminLocks));
+                localStorage.setItem(LS_KEYS.VISITOR_LOGS, JSON.stringify(visitorLogsList.slice(0, 500)));
+            } catch (e) {
+                console.warn("Local storage save warning:", e);
+            }
+        }
+
+        // 5. Device, Browser & Battery Detection (Fully Wrapped in Try/Catch)
+        function detectDeviceAndBrowser() {
+            const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent : '';
+            let deviceType = 'Desktop / PC';
+            let isMobile = false;
+
+            if (/Android/i.test(ua)) {
+                deviceType = 'Android Mobile';
+                isMobile = true;
+            } else if (/iPhone|iPad|iPod/i.test(ua)) {
+                deviceType = /iPad/i.test(ua) ? 'iPad' : 'iPhone (iOS)';
+                isMobile = true;
+            } else if (/Windows/i.test(ua)) {
+                deviceType = 'Windows PC';
+            } else if (/Mac/i.test(ua)) {
+                deviceType = 'MacBook / Mac';
+            } else if (/Linux/i.test(ua)) {
+                deviceType = 'Linux PC';
+            }
+
+            let browser = 'Web Browser';
+            if (/WhatsApp/i.test(ua)) browser = 'WhatsApp Browser';
+            else if (/FBAN|FBAV/i.test(ua)) browser = 'Facebook Browser';
+            else if (/Edg\//i.test(ua)) browser = 'Microsoft Edge';
+            else if (/OPR\/|Opera/i.test(ua)) browser = 'Opera';
+            else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browser = 'Google Chrome';
+            else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browser = 'Safari';
+            else if (/Firefox\//i.test(ua)) browser = 'Mozilla Firefox';
+
+            return {
+                deviceType,
+                browser,
+                isMobile,
+                label: `${deviceType} • ${browser}`
+            };
+        }
+
+        async function detectBatteryStatus() {
+            try {
+                if (typeof navigator !== 'undefined' && typeof navigator.getBattery === 'function') {
+                    const battery = await navigator.getBattery();
+                    const percent = Math.round(battery.level * 100);
+                    const charging = Boolean(battery.charging);
+                    return {
+                        supported: true,
+                        percent,
+                        charging,
+                        label: `${percent}% (${charging ? '⚡ चार्ज हो रहा है' : '🔋 बैटरी पर'})`
+                    };
+                }
+            } catch (e) {
+                console.warn("Battery API unavailable:", e);
+            }
+            return {
+                supported: false,
+                percent: null,
+                charging: false,
+                label: 'N/A (iOS/Unsupported)'
+            };
+        }
+
+        function formatIndianDateTime(dateObj = new Date()) {
+            try {
+                return dateObj.toLocaleString('hi-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+            } catch (e) {
+                return dateObj.toISOString();
+            }
+        }
+
+        async function logVisitorActivity(actionType, sectionKey, villageDetail) {
+            try {
+                const visitorId = getOrCreateUniqueVisitorId();
+                const devInfo = detectDeviceAndBrowser();
+                const batteryInfo = await detectBatteryStatus();
+                const now = new Date();
+                const sectionName = sectionKey === 'mohit' ? 'मोहित वर्मा — भाग 51' : 'सौरभ सिंह — भाग 52';
+
+                const logEntry = {
+                    id: `log_${now.getTime()}_${Math.random().toString(36).substring(2, 6)}`,
+                    visitorId,
+                    timestampMs: now.getTime(),
+                    dateTimeStr: formatIndianDateTime(now),
+                    deviceType: devInfo.deviceType,
+                    browser: devInfo.browser,
+                    isMobile: devInfo.isMobile,
+                    deviceBrowserLabel: devInfo.label,
+                    batterySupported: batteryInfo.supported,
+                    batteryPercent: batteryInfo.percent,
+                    batteryCharging: batteryInfo.charging,
+                    batteryLabel: batteryInfo.label,
+                    actionType,
+                    sectionKey,
+                    sectionName,
+                    villageDetail: villageDetail || 'सभी गाँव (All)',
+                    isAdminSession: Boolean(loggedInAdminRole)
+                };
+
+                visitorLogsList.unshift(logEntry);
+                if (visitorLogsList.length > 500) visitorLogsList = visitorLogsList.slice(0, 500);
+                persistLocalFallbackState();
+
+                const badge = document.getElementById('analytics-btn-badge');
+                if (badge) badge.textContent = visitorLogsList.length;
+
+                if (window._cloudBridge.enabled && typeof window._cloudBridge.saveVisitorLog === 'function') {
+                    window._cloudBridge.saveVisitorLog(logEntry).catch(() => {});
+                }
+            } catch (e) {
+                console.warn("Visitor log error:", e);
+            }
+        }
+
+        // 6. Dataset Accessors & Section Switcher (Blue #1d4ed8 vs Emerald #059669)
+        function getDatasetForOwner(ownerKey) {
+            const customForOwner = customUploadedVoters.filter(v => v.owner === ownerKey);
+            if (ownerKey === 'saurabh') {
+                return [...SAURABH_BASE_DATA, ...customForOwner];
+            }
+            return [...MOHIT_BASE_DATA, ...customForOwner];
+        }
+
+        function updateSectionTabBadges() {
+            const saurabhCount = getDatasetForOwner('saurabh').length;
+            const mohitCount = getDatasetForOwner('mohit').length;
+
+            const badgeSaurabh = document.getElementById('count-badge-saurabh');
+            const badgeMohit = document.getElementById('count-badge-mohit');
+            if (badgeSaurabh) badgeSaurabh.textContent = saurabhCount;
+            if (badgeMohit) badgeMohit.textContent = mohitCount;
+        }
+
+        function switchOwnerSection(ownerKey) {
+            activeOwnerSection = ownerKey;
+            selectedVillage = 'ALL';
+
+            const btnSaurabh = document.getElementById('sec-btn-saurabh');
+            const iconSaurabh = document.getElementById('sec-icon-saurabh');
+            const tagSaurabh = document.getElementById('sec-tag-saurabh');
+            const titleSaurabh = document.getElementById('sec-title-saurabh');
+            const subSaurabh = document.getElementById('sec-sub-saurabh');
+            const badgeSaurabh = document.getElementById('count-badge-saurabh');
+            const lblSaurabh = document.getElementById('sec-lbl-saurabh');
+            const sublblSaurabh = document.getElementById('sec-sublbl-saurabh');
+
+            const btnMohit = document.getElementById('sec-btn-mohit');
+            const iconMohit = document.getElementById('sec-icon-mohit');
+            const tagMohit = document.getElementById('sec-tag-mohit');
+            const titleMohit = document.getElementById('sec-title-mohit');
+            const subMohit = document.getElementById('sec-sub-mohit');
+            const badgeMohit = document.getElementById('count-badge-mohit');
+            const lblMohit = document.getElementById('sec-lbl-mohit');
+            const sublblMohit = document.getElementById('sec-sublbl-mohit');
+
+            if (ownerKey === 'saurabh') {
+                // Active Saurabh Card -> Vibrant Blue (#1d4ed8)
+                btnSaurabh.className = "text-left p-4 sm:p-5 rounded-2xl border-2 border-[#1d4ed8] bg-[#1d4ed8] text-white shadow-lg transition-all cursor-pointer flex items-center justify-between gap-3";
+                iconSaurabh.className = "w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center text-2xl shrink-0";
+                tagSaurabh.className = "text-xs font-bold uppercase tracking-wider text-blue-200";
+                titleSaurabh.className = "text-lg sm:text-xl font-extrabold text-white";
+                subSaurabh.className = "text-xs text-blue-100 mt-0.5";
+                badgeSaurabh.className = "inline-block bg-white text-[#1d4ed8] font-extrabold text-base sm:text-lg px-3.5 py-1 rounded-xl shadow";
+                lblSaurabh.className = "text-[11px] text-blue-100 mt-1 font-bold leading-tight";
+                if (sublblSaurabh) sublblSaurabh.className = "text-[10px] text-blue-200 font-medium leading-tight";
+
+                // Inactive Mohit Card -> Clean White
+                btnMohit.className = "text-left p-4 sm:p-5 rounded-2xl border-2 border-slate-300 bg-white hover:border-[#059669] text-slate-800 shadow-sm transition-all cursor-pointer flex items-center justify-between gap-3";
+                iconMohit.className = "w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl shrink-0";
+                tagMohit.className = "text-xs font-bold uppercase tracking-wider text-emerald-700";
+                titleMohit.className = "text-lg sm:text-xl font-extrabold text-slate-900";
+                subMohit.className = "text-xs text-slate-500 mt-0.5";
+                badgeMohit.className = "inline-block bg-emerald-100 text-emerald-900 font-extrabold text-base sm:text-lg px-3.5 py-1 rounded-xl";
+                lblMohit.className = "text-[11px] text-slate-700 mt-1 font-bold leading-tight";
+                if (sublblMohit) sublblMohit.className = "text-[10px] text-slate-500 font-medium leading-tight";
+            } else {
+                // Active Mohit Card -> Vibrant Emerald (#059669)
+                btnMohit.className = "text-left p-4 sm:p-5 rounded-2xl border-2 border-[#059669] bg-[#059669] text-white shadow-lg transition-all cursor-pointer flex items-center justify-between gap-3";
+                iconMohit.className = "w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center text-2xl shrink-0";
+                tagMohit.className = "text-xs font-bold uppercase tracking-wider text-emerald-100";
+                titleMohit.className = "text-lg sm:text-xl font-extrabold text-white";
+                subMohit.className = "text-xs text-emerald-50 mt-0.5";
+                badgeMohit.className = "inline-block bg-white text-[#059669] font-extrabold text-base sm:text-lg px-3.5 py-1 rounded-xl shadow";
+                lblMohit.className = "text-[11px] text-emerald-100 mt-1 font-bold leading-tight";
+                if (sublblMohit) sublblMohit.className = "text-[10px] text-emerald-200 font-medium leading-tight";
+
+                // Inactive Saurabh Card -> Clean White
+                btnSaurabh.className = "text-left p-4 sm:p-5 rounded-2xl border-2 border-slate-300 bg-white hover:border-[#1d4ed8] text-slate-800 shadow-sm transition-all cursor-pointer flex items-center justify-between gap-3";
+                iconSaurabh.className = "w-12 h-12 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center text-2xl shrink-0";
+                tagSaurabh.className = "text-xs font-bold uppercase tracking-wider text-blue-700";
+                titleSaurabh.className = "text-lg sm:text-xl font-extrabold text-slate-900";
+                subSaurabh.className = "text-xs text-slate-500 mt-0.5";
+                badgeSaurabh.className = "inline-block bg-blue-100 text-blue-900 font-extrabold text-base sm:text-lg px-3.5 py-1 rounded-xl";
+                lblSaurabh.className = "text-[11px] text-slate-700 mt-1 font-bold leading-tight";
+                if (sublblSaurabh) sublblSaurabh.className = "text-[10px] text-slate-500 font-medium leading-tight";
+            }
+
+            // Reset filters cleanly without redundant toast
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = 'ALL';
+            document.getElementById('gender-filter').value = 'ALL';
+            document.getElementById('age-filter').value = 'ALL';
+
+            refreshSectionView();
+            logVisitorActivity('section_switch', ownerKey, 'अनुभाग खोला');
+        }
+
+        function refreshSectionView() {
+            updateSectionTabBadges();
+            buildDynamicVillageControls();
+            populateHouseDropdown(selectedVillage);
+            applyFilters();
+        }
+
+        function buildDynamicVillageControls() {
+            const sectionData = getDatasetForOwner(activeOwnerSection);
+            const kpiGrid = document.getElementById('village-kpi-grid');
+            const tabsContainer = document.getElementById('village-tabs');
+
+            const villageCounts = {};
+            sectionData.forEach(item => {
+                villageCounts[item.village] = (villageCounts[item.village] || 0) + 1;
+            });
+
+            // Default expected villages per section even if 0 records yet
+            if (activeOwnerSection === 'saurabh') {
+                if (!villageCounts["1-बुडैला (वार्ड-1)"]) villageCounts["1-बुडैला (वार्ड-1)"] = 0;
+                if (!villageCounts["2-खजुरिहा (वार्ड-5)"]) villageCounts["2-खजुरिहा (वार्ड-5)"] = 0;
+                if (!villageCounts["3-केवटरा (वार्ड-6,7,8,9)"]) villageCounts["3-केवटरा (वार्ड-6,7,8,9)"] = 0;
+            } else if (activeOwnerSection === 'mohit') {
+                if (!villageCounts["पिपौरी (वार्ड 9,10,11)"]) villageCounts["पिपौरी (वार्ड 9,10,11)"] = 0;
+                if (!villageCounts["महुआखेड़ा (बाद में जुड़ेंगे)"]) villageCounts["महुआखेड़ा (बाद में जुड़ेंगे)"] = 0;
+            }
+
+            const villages = Object.keys(villageCounts);
+            const cardThemes = [
+                { border: 'border-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' },
+                { border: 'border-purple-500', text: 'text-purple-700', bg: 'bg-purple-50' },
+                { border: 'border-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50' },
+                { border: 'border-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' }
+            ];
+
+            // Build Village Summary Cards
+            let kpiHtml = `
+                <div onclick="selectVillage('ALL')" title="पंचायत सूची में दर्ज, विधानसभा सूची में अनुपस्थित" class="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-indigo-600 cursor-pointer hover:shadow-md transition ${selectedVillage === 'ALL' ? 'ring-2 ring-indigo-500 bg-indigo-50/40' : ''}">
+                    <p class="text-xs font-bold text-slate-600">वर्तमान फ़िल्टर (छूटे नाम)</p>
+                    <div class="flex items-baseline justify-between mt-1">
+                        <span class="text-2xl sm:text-3xl font-extrabold text-indigo-700">${sectionData.length}</span>
+                        <span class="text-[11px] font-semibold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">विधानसभा से छूटे</span>
+                    </div>
+                </div>
+            `;
+
+            villages.forEach((vName, idx) => {
+                const theme = cardThemes[idx % cardThemes.length];
+                const isSelected = selectedVillage === vName;
+                kpiHtml += `
+                    <div onclick="selectVillage('${vName.replace(/'/g, "\\'")}')" class="bg-white rounded-2xl p-4 shadow-sm border-l-4 ${theme.border} cursor-pointer hover:shadow-md transition ${isSelected ? `ring-2 ring-indigo-500 ${theme.bg}` : ''}">
+                        <p class="text-xs font-bold text-slate-600 truncate" title="${vName}">${vName}</p>
+                        <div class="flex items-baseline justify-between mt-1">
+                            <span class="text-2xl sm:text-3xl font-extrabold ${theme.text}">${villageCounts[vName]}</span>
+                            <span class="text-[11px] font-medium text-slate-500">चुनें →</span>
+                        </div>
+                    </div>
+                `;
+            });
+            kpiGrid.innerHTML = kpiHtml;
+
+            // Build Village Tabs
+            let tabsHtml = `
+                <button type="button" onclick="selectVillage('ALL')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer ${selectedVillage === 'ALL' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                    सभी गाँव (${sectionData.length})
+                </button>
+            `;
+            villages.forEach(vName => {
+                const isSelected = selectedVillage === vName;
+                tabsHtml += `
+                    <button type="button" onclick="selectVillage('${vName.replace(/'/g, "\\'")}')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${isSelected ? 'bg-indigo-600 text-white shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                        ${vName} (${villageCounts[vName]})
+                    </button>
+                `;
+            });
+            tabsContainer.innerHTML = tabsHtml;
+        }
+
+        // 7. Admin Access Evaluation & Modal Controls
+        function evaluateAdminAccess() {
+            const uid = currentUser ? currentUser.uid : null;
+            loggedInAdminRole = null;
+
+            if (uid && adminLocks.saurabhUid === uid) {
+                loggedInAdminRole = 'saurabh';
+            } else if (uid && adminLocks.mohitUid === uid) {
+                loggedInAdminRole = 'mohit';
+            }
+
+            const modeBadge = document.getElementById('mode-badge');
+            const authBtn = document.getElementById('admin-auth-btn');
+            const btnIcon = document.getElementById('admin-btn-icon');
+            const btnText = document.getElementById('admin-btn-text');
+            const uploadBtn = document.getElementById('admin-upload-btn');
+            const analyticsBtn = document.getElementById('admin-analytics-btn');
+            const analyticsBadge = document.getElementById('analytics-btn-badge');
+            const banner = document.getElementById('admin-banner');
+            const desc = document.getElementById('access-description');
+            const uidDisplay = document.getElementById('admin-uid-display');
+
+            if (uidDisplay) {
+                uidDisplay.textContent = uid ? `सत्र ID: ${uid.slice(0, 14)}...` : '';
+            }
+
+            if (loggedInAdminRole) {
+                const roleLabel = loggedInAdminRole === 'saurabh' ? 'सौरभ सिंह (भाग-52)' : 'मोहित वर्मा (भाग-51)';
+                modeBadge.className = "inline-flex items-center gap-1.5 bg-emerald-400/25 border border-emerald-300/50 text-emerald-100 px-3 py-1 rounded-full text-xs font-extrabold";
+                modeBadge.textContent = `🛡️ Admin सक्रिय: ${roleLabel}`;
+
+                authBtn.className = "inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold px-4 py-2.5 rounded-xl shadow-md transition cursor-pointer text-sm";
+                btnIcon.textContent = "🚪";
+                btnText.textContent = "Admin Logout";
+
+                uploadBtn.classList.remove('hidden');
+                analyticsBtn.classList.remove('hidden');
+                if (analyticsBadge) analyticsBadge.textContent = visitorLogsList.length;
+
+                banner.className = "bg-emerald-50 border border-emerald-300 px-4 py-2.5 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm no-print";
+                desc.innerHTML = `<strong class="text-emerald-900">Admin मोड सक्रिय (${roleLabel}):</strong> आप <strong>सौरभ सिंह (भाग-52)</strong> और <strong>मोहित वर्मा (भाग-51)</strong> दोनों भागों का ASDD स्टेटस बदल सकते हैं और नया डेटा अपलोड कर सकते हैं।`;
+            } else {
+                modeBadge.className = "inline-flex items-center gap-1.5 bg-amber-400/20 border border-amber-300/40 text-amber-200 px-3 py-1 rounded-full text-xs font-bold";
+                modeBadge.textContent = "👁️ पब्लिक व्यू (Read-Only)";
+
+                authBtn.className = "inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl shadow-md transition cursor-pointer text-sm";
+                btnIcon.textContent = "🔐";
+                btnText.textContent = "Admin Login";
+
+                uploadBtn.classList.add('hidden');
+                analyticsBtn.classList.add('hidden');
+
+                banner.className = "bg-white border border-slate-200 px-4 py-2.5 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm no-print";
+                desc.innerHTML = `<strong>पब्लिक व्यू:</strong> <strong>सौरभ सिंह (भाग-52)</strong> या <strong>मोहित वर्मा (भाग-51)</strong> पर क्लिक करके मतदाता एवं ASDD सूची देखें।`;
+            }
+
+            updateModalSlotIndicators();
+            renderTable(currentlyFilteredData);
+        }
+
+        function updateModalSlotIndicators() {
+            const sBadge = document.getElementById('slot-status-saurabh');
+            const mBadge = document.getElementById('slot-status-mohit');
+            if (!sBadge || !mBadge) return;
+
+            const uid = currentUser ? currentUser.uid : null;
+            if (!adminLocks.saurabhUid) {
+                sBadge.textContent = "उपलब्ध";
+                sBadge.className = "text-[10px] px-1.5 py-0.5 rounded bg-indigo-200 text-indigo-900";
+            } else if (adminLocks.saurabhUid === uid) {
+                sBadge.textContent = "आपका खाता";
+                sBadge.className = "text-[10px] px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-900";
+            } else {
+                sBadge.textContent = "लॉक";
+                sBadge.className = "text-[10px] px-1.5 py-0.5 rounded bg-rose-200 text-rose-900";
+            }
+
+            if (!adminLocks.mohitUid) {
+                mBadge.textContent = "उपलब्ध";
+                mBadge.className = "text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900";
+            } else if (adminLocks.mohitUid === uid) {
+                mBadge.textContent = "आपका खाता";
+                mBadge.className = "text-[10px] px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-900";
+            } else {
+                mBadge.textContent = "लॉक";
+                mBadge.className = "text-[10px] px-1.5 py-0.5 rounded bg-rose-200 text-rose-900";
+            }
+        }
+
+        function handleAdminButtonClick() {
+            if (loggedInAdminRole) {
+                handleAdminLogout();
+            } else {
+                document.getElementById('admin-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function selectAdminSlotToLogin(slot) {
+            selectedAdminSlotInModal = slot;
+            const pSaurabh = document.getElementById('pick-admin-saurabh');
+            const pMohit = document.getElementById('pick-admin-mohit');
+
+            if (slot === 'saurabh') {
+                pSaurabh.className = "p-3 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-950 font-bold text-sm text-left transition cursor-pointer";
+                pMohit.className = "p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-emerald-500 text-slate-800 font-bold text-sm text-left transition cursor-pointer";
+            } else {
+                pMohit.className = "p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-950 font-bold text-sm text-left transition cursor-pointer";
+                pSaurabh.className = "p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-indigo-500 text-slate-800 font-bold text-sm text-left transition cursor-pointer";
+            }
+        }
+
+        // 8. ASDD Status & Remark Auto-Save (Collaborative Dual-Admin)
+        async function updateVoterStatus(voterId, newStatus) {
+            if (!loggedInAdminRole) {
+                showToast("केवल सौरभ सिंह या मोहित वर्मा (Admin) ही बदलाव कर सकते हैं!", "🔒");
+                renderTable(currentlyFilteredData);
+                return;
+            }
+
+            voterStatusMap[voterId] = newStatus;
+            persistLocalFallbackState();
+            updateStatusSummaryPills();
+            updateVerificationProgressBar();
+
+            const statusLabel = STATUS_MAP[newStatus]?.label || newStatus;
+
+            if (window._cloudBridge.enabled && typeof window._cloudBridge.saveVoterStatus === 'function' && currentUser) {
+                window._cloudBridge.saveVoterStatus(voterId, newStatus, loggedInAdminRole, currentUser.uid).catch(() => {});
+            }
+
+            showToast(`स्थिति अपडेट हुई: ${statusLabel}`, "✅");
+        }
+
+        async function updateVoterRemark(voterId, newRemark) {
+            if (!loggedInAdminRole) return;
+            const trimmed = newRemark.trim();
+            const prev = voterRemarkMap[voterId] || '';
+            if (trimmed === prev) return;
+
+            if (trimmed) {
+                voterRemarkMap[voterId] = trimmed;
+            } else {
+                delete voterRemarkMap[voterId];
+            }
+            persistLocalFallbackState();
+
+            if (window._cloudBridge.enabled && typeof window._cloudBridge.saveVoterRemark === 'function' && currentUser) {
+                window._cloudBridge.saveVoterRemark(voterId, trimmed, loggedInAdminRole, currentUser.uid).catch(() => {});
+            }
+
+            showToast("टिप्पणी / मोबाइल नं. सुरक्षित कर लिया गया!", "📝");
+        }
+
+        function updateVerificationProgressBar() {
+            const sectionData = getDatasetForOwner(activeOwnerSection);
+            const total = sectionData.length;
+            let verifiedCount = 0;
+
+            sectionData.forEach(r => {
+                const st = voterStatusMap[r.id] || 'pending';
+                if (st !== 'pending') verifiedCount++;
+            });
+
+            const pendingCount = total - verifiedCount;
+            const percent = total > 0 ? Math.round((verifiedCount / total) * 100) : 0;
+
+            const titleEl = document.getElementById('progress-title-text');
+            const verifiedPill = document.getElementById('progress-verified-pill');
+            const pendingPill = document.getElementById('progress-pending-pill');
+            const barEl = document.getElementById('verification-progress-bar');
+
+            if (titleEl) {
+                titleEl.textContent = `सत्यापन प्रगति (Verification Progress): ${percent}% पूर्ण — ${verifiedCount} / ${total} नाम सत्यापित`;
+            }
+            if (verifiedPill) verifiedPill.textContent = `✅ सत्यापित: ${verifiedCount}`;
+            if (pendingPill) pendingPill.textContent = `⏳ शेष लंबित: ${pendingCount}`;
+            if (barEl) barEl.style.width = `${percent}%`;
+        }
+
+        function toggleHouseSort() {
+            sortByHouse = !sortByHouse;
+            const btn = document.getElementById('house-sort-btn');
+            const lbl = document.getElementById('house-sort-label');
+            if (sortByHouse) {
+                btn.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold border-2 border-amber-600 bg-amber-500 text-slate-950 transition cursor-pointer shadow-sm";
+                lbl.textContent = "🏠 मकान संख्या क्रम सक्रिय ✓";
+                showToast("सूची मकान संख्या के अनुसार क्रमबद्ध कर दी गई है", "🏠");
+            } else {
+                btn.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition cursor-pointer shadow-2xs";
+                lbl.textContent = "मकान संख्या से क्रमबद्ध करें";
+                showToast("सूची सामान्य (पंचायत क्र.सं.) क्रम में है", "📋");
+            }
+            applyFilters();
+        }
+
+        // 9. Admin Bulk CSV Upload & Single Voter Entry
+        function openUploadModal() {
+            if (!loggedInAdminRole) {
+                showToast("डेटा अपलोड करने के लिए पहले Admin Login करें।", "🔒");
+                return;
+            }
+            document.getElementById('upload-target-owner').value = activeOwnerSection;
+            document.getElementById('upload-modal').classList.remove('hidden');
+        }
+
+        function closeUploadModal() {
+            document.getElementById('upload-modal').classList.add('hidden');
+        }
+
+        function downloadSampleCSV() {
+            const sampleLines = [
+                'गाँव,पंचायत_क्र_सं,मकान_संख्या,निर्वाचक_का_नाम,पिता_पति_का_नाम,लिंग,आयु'
+            ];
+            const csvContent = '\uFEFF' + sampleLines.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'BLO_Saurabh_Singh_CSV_Header_Format.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("CSV हेडर फॉर्मेट फाइल डाउनलोड हो गई!", "📥");
+        }
+
+        function processCSVUpload() {
+            if (!loggedInAdminRole) return;
+            const fileInput = document.getElementById('csv-file-input');
+            const targetOwner = document.getElementById('upload-target-owner').value;
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showToast("कृपया पहले एक CSV फाइल चुनें!", "⚠️");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function (e) {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+                if (lines.length < 2) {
+                    showToast("CSV फाइल खाली है या सही फॉर्मेट में नहीं है।", "⚠️");
+                    return;
+                }
+
+                const newRecords = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim());
+                    if (cols.length >= 5) {
+                        const village = cols[0] || 'अन्य गाँव';
+                        const pSr = parseInt(cols[1], 10) || i;
+                        const house = cols[2] || '-';
+                        const name = cols[3] || '';
+                        const rel = cols[4] || '-';
+                        const genderRaw = cols[5] || 'पुरुष';
+                        const gender = (genderRaw.includes('महिला') || genderRaw.toLowerCase() === 'f') ? 'महिला' : 'पुरुष';
+                        const age = parseInt(cols[6], 10) || 18;
+
+                        if (name) {
+                            newRecords.push({
+                                id: `${targetOwner}_${Date.now()}_${i}`,
+                                owner: targetOwner,
+                                village,
+                                pSr,
+                                house,
+                                name,
+                                rel,
+                                gender,
+                                age
+                            });
+                        }
+                    }
+                }
+
+                if (newRecords.length === 0) {
+                    showToast("फाइल से कोई मान्य नाम नहीं पढ़ा जा सका।", "⚠️");
+                    return;
+                }
+
+                customUploadedVoters = [...customUploadedVoters, ...newRecords];
+                persistLocalFallbackState();
+
+                if (window._cloudBridge.enabled && typeof window._cloudBridge.saveCustomVotersBatch === 'function') {
+                    window._cloudBridge.saveCustomVotersBatch(newRecords).catch(() => {});
+                }
+
+                fileInput.value = '';
+                closeUploadModal();
+                switchOwnerSection(targetOwner);
+                showToast(`${newRecords.length} मतदाताओं का डेटा सफलतापूर्वक अपलोड व पब्लिक हो गया!`, "🎉");
+            };
+
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function addSingleVoter(event) {
+            event.preventDefault();
+            if (!loggedInAdminRole) return;
+
+            const targetOwner = document.getElementById('upload-target-owner').value;
+            const newRec = {
+                id: `${targetOwner}_${Date.now()}`,
+                owner: targetOwner,
+                village: document.getElementById('single-village').value.trim(),
+                pSr: parseInt(document.getElementById('single-psr').value, 10) || 1,
+                house: document.getElementById('single-house').value.trim(),
+                name: document.getElementById('single-name').value.trim(),
+                rel: document.getElementById('single-rel').value.trim(),
+                gender: document.getElementById('single-gender').value,
+                age: parseInt(document.getElementById('single-age').value, 10) || 18
+            };
+
+            customUploadedVoters.push(newRec);
+            persistLocalFallbackState();
+
+            if (window._cloudBridge.enabled && typeof window._cloudBridge.saveSingleVoter === 'function') {
+                window._cloudBridge.saveSingleVoter(newRec).catch(() => {});
+            }
+
+            event.target.reset();
+            closeUploadModal();
+            switchOwnerSection(targetOwner);
+            showToast(`नया मतदाता "${newRec.name}" सफलतापूर्वक जोड़ा गया!`, "✅");
+        }
+
+        // 10. Admin Visitor Analytics Modal & Battery Display
+        function openAnalyticsModal() {
+            if (!loggedInAdminRole) {
+                showToast("विज़िटर रिपोर्ट देखने के लिए पहले Admin Login करें।", "🔒");
+                return;
+            }
+            refreshAnalyticsView();
+            document.getElementById('analytics-modal').classList.remove('hidden');
+        }
+
+        function closeAnalyticsModal() {
+            document.getElementById('analytics-modal').classList.add('hidden');
+        }
+
+        function refreshAnalyticsView() {
+            const logs = [...visitorLogsList].sort((a, b) => (b.timestampMs || 0) - (a.timestampMs || 0));
+
+            const badge = document.getElementById('analytics-btn-badge');
+            if (badge) badge.textContent = logs.length;
+
+            const uniqueSet = new Set(logs.map(l => l.visitorId).filter(Boolean));
+            const mobileCount = logs.filter(l => l.isMobile).length;
+            const desktopCount = logs.length - mobileCount;
+
+            const saurabhHits = logs.filter(l => l.sectionKey === 'saurabh').length;
+            const mohitHits = logs.filter(l => l.sectionKey === 'mohit').length;
+
+            document.getElementById('kpi-total-visits').textContent = logs.length;
+            document.getElementById('kpi-unique-devices').textContent = uniqueSet.size;
+            document.getElementById('kpi-device-split').textContent = `${mobileCount} 📱 / ${desktopCount} 💻`;
+
+            if (logs.length === 0) {
+                document.getElementById('kpi-top-section').textContent = '—';
+                document.getElementById('kpi-top-section-sub').textContent = 'कोई डेटा नहीं';
+            } else if (saurabhHits >= mohitHits) {
+                document.getElementById('kpi-top-section').textContent = 'सौरभ सिंह (भाग-52)';
+                document.getElementById('kpi-top-section-sub').textContent = `भाग-52: ${saurabhHits} | भाग-51: ${mohitHits}`;
+            } else {
+                document.getElementById('kpi-top-section').textContent = 'मोहित वर्मा (भाग-51)';
+                document.getElementById('kpi-top-section-sub').textContent = `भाग-51: ${mohitHits} | भाग-52: ${saurabhHits}`;
+            }
+
+            // Breakdown Pills
+            const breakdownMap = {};
+            logs.forEach(l => {
+                const key = l.deviceBrowserLabel || 'अन्य डिवाइस';
+                breakdownMap[key] = (breakdownMap[key] || 0) + 1;
+            });
+            const pillsContainer = document.getElementById('analytics-breakdown-pills');
+            const entries = Object.entries(breakdownMap).sort((a, b) => b[1] - a[1]);
+            pillsContainer.innerHTML = entries.length === 0
+                ? `<span class="text-xs text-slate-400">अभी तक कोई डिवाइस डेटा नहीं है।</span>`
+                : entries.map(([label, cnt]) => `
+                    <span class="inline-flex items-center gap-1.5 bg-white border border-slate-300 px-3 py-1 rounded-xl text-xs font-bold text-slate-700 shadow-2xs">
+                        <span>${label}</span>
+                        <span class="bg-purple-100 text-purple-900 px-1.5 py-0.2 rounded-md font-extrabold">${cnt}</span>
+                    </span>
+                `).join('');
+
+            // Visitor Logs Table
+            const tbody = document.getElementById('analytics-table-body');
+            if (logs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-400 font-medium">
+                            अभी तक कोई विज़िटर लॉग उपलब्ध नहीं है।
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = logs.slice(0, 150).map((log, idx) => {
+                const actionBadge = log.actionType === 'page_open'
+                    ? `<span class="inline-block bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md text-[11px] font-bold">🔗 लिंक ओपन</span>`
+                    : log.actionType === 'section_switch'
+                        ? `<span class="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md text-[11px] font-bold">📂 अनुभाग देखा</span>`
+                        : `<span class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md text-[11px] font-bold">🏘️ गाँव क्लिक</span>`;
+
+                const adminTag = log.isAdminSession
+                    ? `<span class="ml-1 text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-bold">Admin</span>`
+                    : '';
+
+                let batteryBadgeHtml = `<span class="inline-block bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-lg text-[11px] font-medium">N/A (iOS/Unsupported)</span>`;
+                if (log.batterySupported && typeof log.batteryPercent === 'number') {
+                    const pct = log.batteryPercent;
+                    const chg = Boolean(log.batteryCharging);
+                    let bCls = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+                    if (pct < 20) bCls = 'bg-rose-100 text-rose-900 border-rose-300';
+                    else if (pct <= 50) bCls = 'bg-amber-100 text-amber-900 border-amber-300';
+
+                    const icon = chg ? '⚡' : '🔋';
+                    const stateTxt = chg ? 'चार्जिंग' : 'बैटरी';
+                    batteryBadgeHtml = `<span class="inline-flex items-center gap-1 border px-2 py-0.5 rounded-lg text-xs font-extrabold ${bCls}">${icon} ${pct}% <span class="text-[10px] font-semibold">(${stateTxt})</span></span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-2 px-3 text-center font-semibold text-slate-600">${idx + 1}</td>
+                        <td class="py-2 px-3 font-medium text-slate-800 whitespace-nowrap">${log.dateTimeStr || '-'}</td>
+                        <td class="py-2 px-3 font-mono text-xs font-bold text-indigo-700">${log.visitorId || '-'}${adminTag}</td>
+                        <td class="py-2 px-3 text-slate-700 font-medium">${log.deviceBrowserLabel || '-'}</td>
+                        <td class="py-2 px-3 text-center whitespace-nowrap">${batteryBadgeHtml}</td>
+                        <td class="py-2 px-3 font-semibold text-slate-800">${log.sectionName || '-'}</td>
+                        <td class="py-2 px-3">
+                            ${actionBadge}
+                            <span class="ml-1.5 font-semibold text-slate-700">${log.villageDetail || '-'}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function clearVisitorLogs() {
+            if (!loggedInAdminRole) return;
+            visitorLogsList = [];
+            persistLocalFallbackState();
+            if (window._cloudBridge.enabled && typeof window._cloudBridge.clearVisitorLogs === 'function') {
+                window._cloudBridge.clearVisitorLogs().catch(() => {});
+            }
+            refreshAnalyticsView();
+            showToast("सभी विज़िटर लॉग साफ़ कर दिए गए हैं।", "🗑️");
+        }
+
+        // 11. Filters, Status Pills, Table Render & CSV Export
+        function populateStatusDropdown() {
+            const statusSelect = document.getElementById('status-filter');
+            statusSelect.innerHTML = `<option value="ALL">सभी स्थितियाँ (All 10 ASDD Status)</option>`;
+            STATUS_OPTIONS.forEach(opt => {
+                const optionEl = document.createElement('option');
+                optionEl.value = opt.value;
+                optionEl.textContent = opt.label;
+                statusSelect.appendChild(optionEl);
+            });
+        }
+
+        function updateStatusSummaryPills() {
+            const container = document.getElementById('status-summary-pills');
+            const currentStatusFilter = document.getElementById('status-filter').value;
+            const sectionData = getDatasetForOwner(activeOwnerSection);
+
+            const villageSubset = selectedVillage === 'ALL'
+                ? sectionData
+                : sectionData.filter(r => r.village === selectedVillage);
+
+            const counts = {};
+            STATUS_OPTIONS.forEach(opt => counts[opt.value] = 0);
+            villageSubset.forEach(r => {
+                const st = voterStatusMap[r.id] || 'pending';
+                counts[st] = (counts[st] || 0) + 1;
+            });
+
+            container.innerHTML = STATUS_OPTIONS.map(opt => {
+                const isSelected = currentStatusFilter === opt.value;
+                const activeRing = isSelected ? 'ring-2 ring-indigo-600 font-extrabold shadow-sm' : 'opacity-90 hover:opacity-100';
+                return `
+                    <button type="button" onclick="selectStatusQuick('${opt.value}')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs border transition cursor-pointer ${opt.pillClass} ${activeRing}">
+                        <span>${opt.label}</span>
+                        <span class="bg-white/80 text-slate-900 px-1.5 py-0.2 rounded-md font-extrabold">${counts[opt.value]}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectStatusQuick(statusVal) {
+            const selectEl = document.getElementById('status-filter');
+            selectEl.value = (selectEl.value === statusVal && statusVal !== 'ALL') ? 'ALL' : statusVal;
+            applyFilters();
+        }
+
+        function selectVillage(villageName) {
+            selectedVillage = villageName;
+            buildDynamicVillageControls();
+            populateHouseDropdown(villageName);
+            applyFilters();
+            const label = villageName === 'ALL' ? 'सभी गाँव (All)' : villageName;
+            logVisitorActivity('village_click', activeOwnerSection, `गाँव देखा: ${label}`);
+        }
+
+        function populateHouseDropdown(villageName) {
+            const houseSelect = document.getElementById('house-filter');
+            const sectionData = getDatasetForOwner(activeOwnerSection);
+            const subset = villageName === 'ALL'
+                ? sectionData
+                : sectionData.filter(item => item.village === villageName);
+
+            const uniqueHouses = [...new Set(subset.map(item => String(item.house)))].sort((a, b) => {
+                const numA = parseInt(a, 10) || 0;
+                const numB = parseInt(b, 10) || 0;
+                if (numA !== numB) return numA - numB;
+                return a.localeCompare(b);
+            });
+
+            houseSelect.innerHTML = `<option value="ALL">सभी मकान नं. (${uniqueHouses.length})</option>`;
+            uniqueHouses.forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = h;
+                opt.textContent = `मकान नं. ${h}`;
+                houseSelect.appendChild(opt);
+            });
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            applyFilters();
+        }
+
+        function resetAllFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = 'ALL';
+            document.getElementById('gender-filter').value = 'ALL';
+            document.getElementById('age-filter').value = 'ALL';
+            selectedVillage = 'ALL';
+            if (sortByHouse) {
+                sortByHouse = false;
+                const btn = document.getElementById('house-sort-btn');
+                const lbl = document.getElementById('house-sort-label');
+                if (btn) btn.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition cursor-pointer shadow-2xs";
+                if (lbl) lbl.textContent = "मकान संख्या से क्रमबद्ध करें";
+            }
+            buildDynamicVillageControls();
+            populateHouseDropdown('ALL');
+            applyFilters();
+            showToast('सभी फ़िल्टर रीसेट कर दिए गए हैं', '🔄');
+        }
+
+        function applyFilters() {
+            const sectionData = getDatasetForOwner(activeOwnerSection);
+            const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+            const statusVal = document.getElementById('status-filter').value;
+            const houseVal = document.getElementById('house-filter').value;
+            const genderVal = document.getElementById('gender-filter').value;
+            const ageVal = document.getElementById('age-filter').value;
+
+            document.getElementById('clear-search-btn').classList.toggle('hidden', searchQuery === '');
+
+            currentlyFilteredData = sectionData.filter(row => {
+                const rowStatus = voterStatusMap[row.id] || 'pending';
+
+                if (selectedVillage !== 'ALL' && row.village !== selectedVillage) return false;
+                if (statusVal !== 'ALL' && rowStatus !== statusVal) return false;
+                if (houseVal !== 'ALL' && String(row.house) !== houseVal) return false;
+                if (genderVal !== 'ALL' && row.gender !== genderVal) return false;
+
+                if (ageVal !== 'ALL') {
+                    if (ageVal === '18-19' && (row.age < 18 || row.age > 19)) return false;
+                    if (ageVal === '20-25' && (row.age < 20 || row.age > 25)) return false;
+                    if (ageVal === '26-45' && (row.age < 26 || row.age > 45)) return false;
+                    if (ageVal === '46-60' && (row.age < 46 || row.age > 60)) return false;
+                    if (ageVal === '60+' && row.age <= 60) return false;
+                }
+
+                if (searchQuery !== '') {
+                    const remarkVal = (voterRemarkMap[row.id] || '').toLowerCase();
+                    const matchName = row.name.toLowerCase().includes(searchQuery);
+                    const matchRel = row.rel.toLowerCase().includes(searchQuery);
+                    const matchHouse = String(row.house).toLowerCase().includes(searchQuery);
+                    const matchSr = String(row.pSr).includes(searchQuery);
+                    const matchRemark = remarkVal.includes(searchQuery);
+                    if (!matchName && !matchRel && !matchHouse && !matchSr && !matchRemark) return false;
+                }
+
+                return true;
+            });
+
+            if (sortByHouse) {
+                currentlyFilteredData.sort((a, b) => {
+                    const numA = parseInt(String(a.house), 10);
+                    const numB = parseInt(String(b.house), 10);
+                    const validA = !isNaN(numA);
+                    const validB = !isNaN(numB);
+                    if (validA && validB && numA !== numB) return numA - numB;
+                    const cmp = String(a.house).localeCompare(String(b.house), 'hi');
+                    if (cmp !== 0) return cmp;
+                    return (a.pSr || 0) - (b.pSr || 0);
+                });
+            }
+
+            renderTable(currentlyFilteredData);
+            updateStatistics(currentlyFilteredData);
+            updateStatusSummaryPills();
+            updateVerificationProgressBar();
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('voter-table-body');
+            const emptyState = document.getElementById('empty-state');
+            const sectionData = getDatasetForOwner(activeOwnerSection);
+
+            if (data.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+
+                const emptyTitle = document.getElementById('empty-state-title');
+                const emptyDesc = document.getElementById('empty-state-desc');
+                const emptyActions = document.getElementById('empty-state-actions');
+
+                if (selectedVillage.includes('महुआखेड़ा') || (sectionData.length === 0 && activeOwnerSection === 'mohit')) {
+                    emptyTitle.textContent = "महुआखेड़ा गाँव की सूची बाद में जोड़ी जाएगी";
+                    emptyDesc.textContent = "महुआखेड़ा का डेटा अभी उपलब्ध नहीं है। डेटा उपलब्ध होने पर एडमिन लॉगिन करके CSV फाइल अपलोड या नाम जोड़े जा सकते हैं।";
+                    emptyActions.innerHTML = loggedInAdminRole
+                        ? `<button type="button" onclick="openUploadModal()" class="bg-[#059669] hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow transition cursor-pointer">📤 महुआखेड़ा का डेटा अपलोड करें</button>`
+                        : `<button type="button" onclick="resetAllFilters()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-xl text-sm shadow transition cursor-pointer">पिपौरी (वार्ड 9,10,11) सूची देखें</button>`;
+                } else {
+                    emptyTitle.textContent = "कोई मतदाता रिकॉर्ड नहीं मिला";
+                    emptyDesc.textContent = "कृपया खोज शब्द बदलें या सभी फ़िल्टर रीसेट करें।";
+                    emptyActions.innerHTML = `<button type="button" onclick="resetAllFilters()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-xl text-sm shadow transition cursor-pointer">सभी फ़िल्टर रीसेट करें</button>`;
+                }
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            const fragment = document.createDocumentFragment();
+            const canEdit = Boolean(loggedInAdminRole);
+
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                const currentStatus = voterStatusMap[row.id] || 'pending';
+                const statusObj = STATUS_MAP[currentStatus] || STATUS_MAP['pending'];
+                const currentRemark = voterRemarkMap[row.id] || '';
+                const safeRemarkAttr = currentRemark.replace(/"/g, '&quot;');
+
+                let villageBadgeClass = "bg-blue-100 text-blue-800 border-blue-200";
+                if (row.village.includes("खजुरिहा")) villageBadgeClass = "bg-purple-100 text-purple-800 border-purple-200";
+                else if (row.village.includes("केवटरा") || row.village.includes("पिपौरी")) villageBadgeClass = "bg-emerald-100 text-emerald-800 border-emerald-200";
+
+                const genderBadge = row.gender === "पुरुष"
+                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-cyan-200/70 text-cyan-900">पुरुष</span>`
+                    : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-200/70 text-rose-900">महिला</span>`;
+
+                let statusCellHtml = '';
+                if (canEdit) {
+                    const optionsHtml = STATUS_OPTIONS.map(opt =>
+                        `<option value="${opt.value}" ${opt.value === currentStatus ? 'selected' : ''}>${opt.label}</option>`
+                    ).join('');
+                    statusCellHtml = `
+                        <select onchange="updateVoterStatus('${row.id}', this.value)" class="w-full px-2.5 py-1.5 rounded-xl text-xs font-bold border shadow-2xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 ${statusObj.badgeClass}">
+                            ${optionsHtml}
+                        </select>
+                    `;
+                } else {
+                    statusCellHtml = `
+                        <span class="inline-block w-full text-center px-2.5 py-1 rounded-xl text-xs font-bold border ${statusObj.badgeClass}">
+                            ${statusObj.label}
+                        </span>
+                    `;
+                }
+
+                let remarkCellHtml = '';
+                if (canEdit) {
+                    remarkCellHtml = `
+                        <input type="text" value="${safeRemarkAttr}" onblur="updateVoterRemark('${row.id}', this.value)" onkeydown="if(event.key==='Enter'){this.blur();}" placeholder="नोट / मोबाइल / फॉर्म-6 नं..." class="w-full px-2.5 py-1.5 bg-white border border-teal-300 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    `;
+                } else {
+                    remarkCellHtml = currentRemark
+                        ? `<span class="inline-block text-xs font-semibold text-teal-900 bg-teal-100/80 border border-teal-200 px-2.5 py-1 rounded-lg">${currentRemark}</span>`
+                        : `<span class="text-xs text-slate-400">—</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="py-2.5 px-2.5 text-center border-r border-slate-200 col-sr-total">${index + 1}</td>
+                    <td class="py-2.5 px-3 border-r border-blue-100 col-village">
+                        <span class="inline-block px-2 py-0.5 rounded-lg text-xs border ${villageBadgeClass}">
+                            ${row.village}
+                        </span>
+                    </td>
+                    <td class="py-2.5 px-2.5 text-center border-r border-purple-100 col-sr-panch">${row.pSr}</td>
+                    <td class="py-2.5 px-2.5 text-center border-r border-amber-100 col-house">${row.house}</td>
+                    <td class="py-2.5 px-3.5 border-r border-emerald-100 col-voter text-[15px]">${row.name}</td>
+                    <td class="py-2.5 px-3.5 border-r border-pink-100 col-rel">${row.rel}</td>
+                    <td class="py-2.5 px-2.5 text-center border-r border-cyan-100 col-gender">${genderBadge}</td>
+                    <td class="py-2.5 px-2.5 text-center border-r border-orange-100 col-age">${row.age}</td>
+                    <td class="py-2.5 px-3 border-r border-indigo-100 col-status">${statusCellHtml}</td>
+                    <td class="py-2.5 px-3 col-remark">${remarkCellHtml}</td>
+                `;
+                fragment.appendChild(tr);
+            });
+
+            tbody.innerHTML = '';
+            tbody.appendChild(fragment);
+        }
+
+        function updateStatistics(data) {
+            const total = data.length;
+            const males = data.filter(d => d.gender === 'पुरुष').length;
+            const females = data.filter(d => d.gender === 'महिला').length;
+
+            const ownerTitle = activeOwnerSection === 'saurabh' ? 'सौरभ सिंह — भाग संख्या 52' : 'मोहित वर्मा — भाग संख्या 51';
+            const villageLabel = selectedVillage === 'ALL' ? 'सभी गाँव' : selectedVillage;
+            
+            document.getElementById('filter-summary-text').innerHTML = 
+                `दिखाए जा रहे हैं: <strong class="text-indigo-700">${ownerTitle}</strong> • <strong>${villageLabel}</strong> — विधानसभा से छूटे कुल <strong class="text-emerald-700">${total} नाम</strong> (पुरुष: ${males}, महिला: ${females})`;
+            
+            document.getElementById('section-source-note').textContent = `पंचायत में दर्ज, विधानसभा में अनुपस्थित | ${ownerTitle}`;
+            document.getElementById('print-filter-info').textContent = `${ownerTitle} | ${villageLabel} | छूटे हुए नाम (विधानसभा से): ${total} (पुरुष: ${males}, महिला: ${females})`;
+        }
+
+        function exportToCSV() {
+            if (currentlyFilteredData.length === 0) {
+                showToast('डाउनलोड करने के लिए कोई डेटा उपलब्ध नहीं है', '⚠️');
+                return;
+            }
+
+            const headers = [
+                'क्र.सं. (कुल)',
+                'गाँव / अनुभाग (वार्ड)',
+                'क्र.सं. (पंचायत सूची)',
+                'मकान संख्या',
+                'निर्वाचक का नाम',
+                'पिता / पति का नाम',
+                'लिंग',
+                'आयु',
+                'सत्यापन स्थिति (ASDD)',
+                'टिप्पणी / मोबाइल नं.'
+            ];
+
+            const csvRows = [headers.join(',')];
+
+            currentlyFilteredData.forEach((row, idx) => {
+                const stKey = voterStatusMap[row.id] || 'pending';
+                const stLabel = STATUS_MAP[stKey]?.label || stKey;
+                const remarkStr = (voterRemarkMap[row.id] || '').replace(/"/g, '""');
+                const values = [
+                    idx + 1,
+                    `"${row.village}"`,
+                    row.pSr,
+                    `"${row.house}"`,
+                    `"${row.name}"`,
+                    `"${row.rel}"`,
+                    `"${row.gender}"`,
+                    row.age,
+                    `"${stLabel}"`,
+                    `"${remarkStr}"`
+                ];
+                csvRows.push(values.join(','));
+            });
+
+            const csvContent = '\uFEFF' + csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            const ownerTag = activeOwnerSection === 'saurabh' ? 'Saurabh_Singh_Bhag_52' : 'Mohit_Verma_Bhag_51';
+            link.setAttribute('href', url);
+            link.setAttribute('download', `BLO_Saurabh_Singh_${ownerTag}_Report.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast(`${currentlyFilteredData.length} मतदाताओं की रिपोर्ट डाउनलोड हो गई!`, '✅');
+        }
+
+        function showToast(message, icon = '✅') {
+            const toast = document.getElementById('toast-box');
+            document.getElementById('toast-msg').textContent = message;
+            document.getElementById('toast-icon').textContent = icon;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3400);
+        }
+
+        // Expose all handlers cleanly on window
+        window.switchOwnerSection = switchOwnerSection;
+        window.selectVillage = selectVillage;
+        window.selectStatusQuick = selectStatusQuick;
+        window.applyFilters = applyFilters;
+        window.clearSearch = clearSearch;
+        window.resetAllFilters = resetAllFilters;
+        window.exportToCSV = exportToCSV;
+        window.handleAdminButtonClick = handleAdminButtonClick;
+        window.closeAdminModal = closeAdminModal;
+        window.selectAdminSlotToLogin = selectAdminSlotToLogin;
+        window.loginWithGoogleForSelectedAdmin = loginWithGoogleForSelectedAdmin;
+        window.claimSelectedAdminWithCurrentSession = claimSelectedAdminWithCurrentSession;
+        window.updateVoterStatus = updateVoterStatus;
+        window.updateVoterRemark = updateVoterRemark;
+        window.toggleHouseSort = toggleHouseSort;
+        window.openUploadModal = openUploadModal;
+        window.closeUploadModal = closeUploadModal;
+        window.downloadSampleCSV = downloadSampleCSV;
+        window.processCSVUpload = processCSVUpload;
+        window.addSingleVoter = addSingleVoter;
+        window.openAnalyticsModal = openAnalyticsModal;
+        window.closeAnalyticsModal = closeAnalyticsModal;
+        window.refreshAnalyticsView = refreshAnalyticsView;
+        window.clearVisitorLogs = clearVisitorLogs;
+
+        // Immediate Synchronous Initialization on DOMContentLoaded (Never blocks on network)
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLocalFallbackState();
+            currentUser = { uid: getOrCreateLocalSessionUid(), isAnonymous: true };
+            populateStatusDropdown();
+            evaluateAdminAccess();
+            refreshSectionView();
+            logVisitorActivity('page_open', activeOwnerSection, 'पोर्टल लिंक ओपन किया');
+        });
+    </script>
+
+    <!-- Optional Non-Blocking Firebase Cloud Sync Module -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            signInAnonymously,
+            signInWithCustomToken,
+            GoogleAuthProvider,
+            signInWithPopup,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            setDoc,
+            getDocs,
+            deleteDoc,
+            onSnapshot,
+            collection,
+            writeBatch
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        async function initFirebaseCloudSync() {
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDgjpTYXma62dcAnTAs4LgJcH76keZ9RdQ",
+                authDomain: "blo-saurabh-singh-3d6cd.firebaseapp.com",
+                projectId: "blo-saurabh-singh-3d6cd",
+                storageBucket: "blo-saurabh-singh-3d6cd.firebasestorage.app",
+                messagingSenderId: "742330440387",
+                appId: "1:742330440387:web:33bc08cb5da1153be9e076",
+                measurementId: "G-5NGMGGM82G"
+            };
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                currentUser = auth.currentUser;
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        evaluateAdminAccess();
+                    }
+                });
+
+                window._cloudBridge.enabled = true;
+                window._cloudBridge.saveAdminLocks = async (locks, slot, label) => {
+                    const adminsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'admins');
+                    await setDoc(adminsDocRef, { ...locks, [`${slot}Label`]: label, updatedAt: new Date().toISOString() }, { merge: true });
+                };
+                window._cloudBridge.saveVoterStatus = async (voterId, status, role, uid) => {
+                    const voterDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'voters_status', voterId);
+                    await setDoc(voterDocRef, { status, updatedByRole: role, updatedByUid: uid, updatedAt: new Date().toISOString() }, { merge: true });
+                };
+                window._cloudBridge.saveVoterRemark = async (voterId, remark, role, uid) => {
+                    const voterDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'voters_status', voterId);
+                    await setDoc(voterDocRef, { remark, updatedByRole: role, updatedByUid: uid, updatedAt: new Date().toISOString() }, { merge: true });
+                };
+                window._cloudBridge.saveCustomVotersBatch = async (records) => {
+                    for (let i = 0; i < records.length; i += 400) {
+                        const batch = writeBatch(db);
+                        records.slice(i, i + 400).forEach(rec => {
+                            batch.set(doc(db, 'artifacts', appId, 'public', 'data', 'custom_voters', rec.id), rec);
+                        });
+                        await batch.commit();
+                    }
+                };
+                window._cloudBridge.saveSingleVoter = async (rec) => {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom_voters', rec.id), rec);
+                };
+                window._cloudBridge.saveVisitorLog = async (entry) => {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'visitor_logs', entry.id), entry);
+                };
+                window._cloudBridge.clearVisitorLogs = async () => {
+                    const logsCol = collection(db, 'artifacts', appId, 'public', 'data', 'visitor_logs');
+                    const snap = await getDocs(logsCol);
+                    const batch = writeBatch(db);
+                    snap.forEach(d => batch.delete(d.ref));
+                    await batch.commit();
+                };
+                window._cloudBridge.googleSignIn = async () => {
+                    const res = await signInWithPopup(auth, new GoogleAuthProvider());
+                    return res.user;
+                };
+                window._cloudBridge.signOut = async () => {
+                    await signOut(auth);
+                    const res = await signInAnonymously(auth);
+                    return res.user;
+                };
+
+                // Attach real-time Firestore listeners
+                onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'admins'), (snap) => {
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        adminLocks.saurabhUid = d.saurabhUid || null;
+                        adminLocks.mohitUid = d.mohitUid || null;
+                        persistLocalFallbackState();
+                        evaluateAdminAccess();
+                    }
+                }, () => {});
+
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'voters_status'), (snap) => {
+                    snap.forEach(d => {
+                        const val = d.data();
+                        if (val && val.status) voterStatusMap[d.id] = val.status;
+                        if (val && typeof val.remark === 'string') {
+                            if (val.remark) voterRemarkMap[d.id] = val.remark;
+                            else delete voterRemarkMap[d.id];
+                        }
+                    });
+                    persistLocalFallbackState();
+                    applyFilters();
+                }, () => {});
+
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'custom_voters'), (snap) => {
+                    const list = [];
+                    snap.forEach(d => list.push(d.data()));
+                    customUploadedVoters = list;
+                    persistLocalFallbackState();
+                    refreshSectionView();
+                }, () => {});
+
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'visitor_logs'), (snap) => {
+                    const list = [];
+                    snap.forEach(d => list.push(d.data()));
+                    list.sort((a, b) => (b.timestampMs || 0) - (a.timestampMs || 0));
+                    visitorLogsList = list;
+                    persistLocalFallbackState();
+                    const badge = document.getElementById('analytics-btn-badge');
+                    if (badge) badge.textContent = visitorLogsList.length;
+                }, () => {});
+
+                evaluateAdminAccess();
+            } catch (err) {
+                console.warn("Running in instant local mode:", err);
+            }
+        }
+
+        window.addEventListener('load', initFirebaseCloudSync);
+    </script>
+</body>
+</html>
